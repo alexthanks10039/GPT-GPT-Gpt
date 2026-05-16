@@ -696,20 +696,30 @@ h3 {
   padding: 18px;
 }
 
+.calc-controls {
+  display: grid;
+  align-content: start;
+  gap: 16px;
+}
+
 .calc-steps {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 6px;
-  margin-bottom: 18px;
+  gap: 5px;
+  margin-bottom: 0;
+  padding: 5px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.035);
 }
 
 .calc-steps button {
   min-height: 38px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border: 1px solid transparent;
+  border-radius: 6px;
   color: var(--muted);
   cursor: pointer;
-  background: rgba(255, 255, 255, 0.04);
+  background: transparent;
   transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
 }
 
@@ -777,7 +787,7 @@ h3 {
 .choice-card,
 .package-card,
 .option-card {
-  min-height: 112px;
+  min-height: 120px;
   border: 1px solid var(--line);
   border-radius: var(--radius);
   color: var(--text);
@@ -785,7 +795,7 @@ h3 {
   min-width: 0;
   text-align: left;
   overflow: hidden;
-  background: rgba(255, 255, 255, 0.045);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.032));
   transition: transform 0.22s ease, border-color 0.22s ease, background 0.22s ease, box-shadow 0.22s ease;
 }
 
@@ -793,14 +803,21 @@ h3 {
 .package-card {
   display: grid;
   align-content: start;
+  grid-template-rows: 24px minmax(38px, auto) minmax(34px, auto);
   gap: 8px;
-  padding: 14px;
+  padding: 12px;
 }
 
-.choice-card svg {
+.choice-card svg,
+.option-card svg {
   width: 20px;
   height: 20px;
+  padding: 4px;
+  box-sizing: content-box;
+  border: 1px solid rgba(77, 184, 255, 0.2);
+  border-radius: 7px;
   color: var(--blue-glow);
+  background: rgba(22, 139, 255, 0.08);
 }
 
 .choice-card small,
@@ -814,7 +831,7 @@ h3 {
 .choice-card:hover,
 .package-card:hover,
 .option-card:hover {
-  transform: translateY(-3px);
+  transform: translateY(-2px);
   border-color: rgba(77, 184, 255, 0.34);
 }
 
@@ -822,7 +839,9 @@ h3 {
 .package-card.is-selected,
 .option-card:has(input:checked) {
   border-color: rgba(77, 184, 255, 0.62);
-  background: linear-gradient(145deg, rgba(22, 139, 255, 0.18), rgba(255, 255, 255, 0.055));
+  background:
+    radial-gradient(circle at 18px 16px, rgba(77, 184, 255, 0.16), transparent 42%),
+    linear-gradient(180deg, rgba(22, 139, 255, 0.16), rgba(255, 255, 255, 0.045));
   box-shadow: 0 0 0 1px rgba(77, 184, 255, 0.1), 0 18px 46px rgba(22, 139, 255, 0.13);
 }
 
@@ -853,7 +872,9 @@ h3 {
 
 .option-card span {
   display: grid;
+  grid-template-rows: 24px minmax(38px, auto) minmax(34px, auto);
   gap: 6px;
+  min-height: 120px;
   min-width: 0;
   padding: 12px;
 }
@@ -871,12 +892,6 @@ h3 {
 
 .option-card b {
   font-size: 15px;
-}
-
-.option-card svg {
-  width: 19px;
-  height: 19px;
-  color: var(--blue-glow);
 }
 
 .calc-range {
