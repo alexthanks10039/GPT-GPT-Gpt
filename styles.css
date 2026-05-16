@@ -681,7 +681,7 @@ h3 {
 
 .calc-grid {
   display: grid;
-  grid-template-columns: 350px minmax(0, 1fr) 310px;
+  grid-template-columns: 370px minmax(0, 1fr) 300px;
   gap: 1px;
   background: rgba(255, 255, 255, 0.08);
 }
@@ -721,7 +721,9 @@ h3 {
 
 .calc-step-panel {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 18px;
+  min-width: 0;
 }
 
 .calc-step-panel[hidden] {
@@ -731,6 +733,7 @@ h3 {
 .calc-group {
   display: grid;
   gap: 12px;
+  min-width: 0;
 }
 
 .calc-label,
@@ -760,14 +763,15 @@ h3 {
 .option-grid {
   display: grid;
   gap: 10px;
+  min-width: 0;
 }
 
 .choice-grid {
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .choice-grid.two {
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .choice-card,
@@ -778,7 +782,9 @@ h3 {
   border-radius: var(--radius);
   color: var(--text);
   cursor: pointer;
+  min-width: 0;
   text-align: left;
+  overflow: hidden;
   background: rgba(255, 255, 255, 0.045);
   transition: transform 0.22s ease, border-color 0.22s ease, background 0.22s ease, box-shadow 0.22s ease;
 }
@@ -821,7 +827,7 @@ h3 {
 }
 
 .package-grid {
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .package-card span {
@@ -831,7 +837,7 @@ h3 {
 }
 
 .option-grid {
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .option-card {
@@ -848,7 +854,23 @@ h3 {
 .option-card span {
   display: grid;
   gap: 6px;
-  padding: 14px;
+  min-width: 0;
+  padding: 12px;
+}
+
+.choice-card strong,
+.choice-card small,
+.package-card strong,
+.package-card small,
+.option-card b,
+.option-card small {
+  overflow-wrap: break-word;
+  hyphens: auto;
+  line-height: 1.28;
+}
+
+.option-card b {
+  font-size: 15px;
 }
 
 .option-card svg {
