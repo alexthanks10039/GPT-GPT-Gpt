@@ -23,7 +23,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=20260517-2" />
+    <link rel="stylesheet" href="styles.css?v=20260517-4" />
   </head>
   <body>
     <div class="noise" aria-hidden="true"></div>
@@ -585,6 +585,10 @@
             <label>Площадь<input name="area" type="text" placeholder="Например, 84 м²" /></label>
             <input name="calculatorPayload" type="hidden" data-calculator-payload />
             <input name="estimatedPrice" type="hidden" data-calculator-price />
+            <input name="calculatorArea" type="hidden" data-calculator-area />
+            <input name="calculatorOptions" type="hidden" data-calculator-options />
+            <input name="calculatorBreakdown" type="hidden" data-calculator-breakdown />
+            <input name="calculatedAt" type="hidden" data-calculated-at />
             <input name="leadSource" type="hidden" value="landing_calculator" />
             <button class="button" type="submit">Получить расчет в ₸</button>
             <p class="form-note" data-form-note>Ответим в течение 15 минут в рабочее время.</p>
@@ -609,7 +613,7 @@
         </label>
         <button class="editor-primary" type="button" data-editor-login-submit>Войти</button>
         <p class="editor-status" data-editor-login-status></p>
-        <p class="editor-hint">Демо-пароль: admin2026!</p>
+        <p class="editor-hint">Dev-режим: временно можно войти без пароля. Демо-пароль: admin2026!</p>
       </form>
 
       <section class="editor-panel" data-editor-panel hidden>
@@ -623,6 +627,7 @@
 
         <div class="editor-tabs" role="tablist">
           <button class="is-active" type="button" data-editor-tab="content">Контент</button>
+          <button type="button" data-editor-tab="blocks">Блоки</button>
           <button type="button" data-editor-tab="style">Стиль</button>
           <button type="button" data-editor-tab="motion">Анимации</button>
           <button type="button" data-editor-tab="data">Данные</button>
@@ -649,23 +654,23 @@
               </label>
               <label class="editor-field wide">
                 Надзаголовок hero
-                <input data-setting="content.heroEyebrow" type="text" />
+                <input data-setting="blocks.hero.subtitle" type="text" />
               </label>
               <label class="editor-field wide">
                 Главный заголовок
-                <textarea data-setting="content.heroTitle"></textarea>
+                <textarea data-setting="blocks.hero.title"></textarea>
               </label>
               <label class="editor-field wide">
                 Описание hero
-                <textarea data-setting="content.heroText"></textarea>
+                <textarea data-setting="blocks.hero.description"></textarea>
               </label>
               <label class="editor-field">
                 CTA 1
-                <input data-setting="content.primaryCta" type="text" />
+                <input data-setting="blocks.hero.cta.0.label" type="text" />
               </label>
               <label class="editor-field">
                 CTA 2
-                <input data-setting="content.secondaryCta" type="text" />
+                <input data-setting="blocks.hero.cta.1.label" type="text" />
               </label>
               <label class="editor-field">
                 Цена в hero
@@ -673,16 +678,28 @@
               </label>
               <label class="editor-field">
                 Подпись футера
-                <input data-setting="content.footerText" type="text" />
+                <input data-setting="blocks.footer.description" type="text" />
               </label>
               <label class="editor-field wide">
                 Финальный CTA
-                <textarea data-setting="content.finalTitle"></textarea>
+                <textarea data-setting="blocks.lead.title"></textarea>
               </label>
               <label class="editor-field wide">
                 Текст финального CTA
-                <textarea data-setting="content.finalText"></textarea>
+                <textarea data-setting="blocks.lead.description"></textarea>
               </label>
+            </div>
+          </div>
+
+          <div class="editor-tab-panel" data-editor-tab-panel="blocks" hidden>
+            <div class="editor-block-layout">
+              <div class="editor-block-sidebar">
+                <span>1. Выберите блок</span>
+                <div class="editor-block-list" data-block-list aria-label="Блоки лендинга"></div>
+              </div>
+              <div class="editor-block-form" data-block-form>
+                <p class="editor-hint">Выберите блок в списке внутри панели, затем заполните поля и сохраните изменения.</p>
+              </div>
             </div>
           </div>
 
@@ -795,6 +812,22 @@
               <textarea class="editor-export" data-editor-export placeholder="Здесь появятся настройки"></textarea>
             </label>
             <div class="editor-grid">
+              <label class="editor-field wide">
+                SEO title
+                <input data-setting="seo.title" type="text" />
+              </label>
+              <label class="editor-field wide">
+                SEO description
+                <textarea data-setting="seo.description"></textarea>
+              </label>
+              <label class="editor-field wide">
+                SEO keywords
+                <textarea data-setting="seo.keywords"></textarea>
+              </label>
+              <label class="editor-field">
+                Theme color
+                <input data-setting="seo.themeColor" type="color" />
+              </label>
               <label class="editor-field">
                 Новый пароль
                 <input data-new-password type="password" placeholder="Минимум 6 символов" />
