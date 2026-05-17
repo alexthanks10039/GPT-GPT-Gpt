@@ -1438,8 +1438,18 @@ h3 {
 .lead-form label {
   display: grid;
   gap: 8px;
+  order: 10;
   color: var(--muted);
   font-size: 13px;
+}
+
+.lead-form .button {
+  order: 30;
+}
+
+.lead-form .form-note {
+  order: 40;
+  margin: 0;
 }
 
 .lead-form input,
