@@ -1,3 +1,8 @@
 verification-*.png
 .DS_Store
 Thumbs.db
+rag/chroma_db/
+rag/.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
