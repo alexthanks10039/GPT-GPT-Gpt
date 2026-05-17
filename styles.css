@@ -785,6 +785,10 @@ h3 {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.calc-step-panel[data-step-panel="3"] .choice-grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 .choice-card,
 .package-card,
 .option-card {
@@ -807,6 +811,23 @@ h3 {
   grid-template-rows: 24px minmax(38px, auto) minmax(34px, auto);
   gap: 8px;
   padding: 12px;
+}
+
+.calc-step-panel[data-step-panel="3"] .choice-card {
+  grid-template-columns: 34px minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  align-items: center;
+  column-gap: 12px;
+  min-height: 76px;
+}
+
+.calc-step-panel[data-step-panel="3"] .choice-card svg {
+  grid-row: 1 / 3;
+}
+
+.calc-step-panel[data-step-panel="3"] .choice-card strong,
+.calc-step-panel[data-step-panel="3"] .choice-card small {
+  min-width: 0;
 }
 
 .choice-card svg,
