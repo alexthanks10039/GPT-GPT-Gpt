@@ -23,7 +23,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=20260517-8" />
+    <link rel="stylesheet" href="styles.css?v=20260518-1" />
   </head>
   <body>
     <div class="noise" aria-hidden="true"></div>
@@ -470,33 +470,40 @@
                     <span></span><span></span><span></span>
                   </div>
 
-                  <div class="house-model" data-house-model aria-label="Интерактивная модель дома">
-                    <div class="plot">
-                      <span class="path"></span>
-                      <span class="garden-light light-a"></span>
-                      <span class="garden-light light-b"></span>
-                      <span class="garden-light light-c"></span>
+                  <div class="house-model figma-room-model" data-house-model aria-label="Интерактивная модель помещения">
+                    <div class="room-scene">
+                      <img class="room-object" src="assets/figma/room-object.svg" alt="" aria-hidden="true" />
+
+                      <div class="room-layer room-layer-main" data-room-layer="lights-main" aria-hidden="true">
+                        <img class="room-fixture fixture-main-224" src="assets/figma/light-main-224.svg" alt="" />
+                      </div>
+
+                      <div class="room-layer room-layer-window" data-room-layer="lights-window" aria-hidden="true">
+                        <img class="room-window-plate" src="assets/figma/window-corner.svg" alt="" />
+                        <img class="room-fixture fixture-window-268" src="assets/figma/light-window-268.svg" alt="" />
+                        <img class="room-fixture fixture-window-271" src="assets/figma/light-window-271.svg" alt="" />
+                        <img class="room-fixture fixture-window-272" src="assets/figma/light-window-272.svg" alt="" />
+                      </div>
+
+                      <div class="room-layer room-layer-decor" data-room-layer="lights-decor" aria-hidden="true">
+                        <img class="room-fixture fixture-decor-234" src="assets/figma/light-decor-234.svg" alt="" />
+                        <img class="room-fixture fixture-decor-235" src="assets/figma/light-decor-235.svg" alt="" />
+                        <img class="room-fixture fixture-decor-236" src="assets/figma/light-decor-236.svg" alt="" />
+                        <img class="room-fixture fixture-decor-237" src="assets/figma/light-decor-237.svg" alt="" />
+                        <img class="room-fixture fixture-decor-256" src="assets/figma/light-decor-256.svg" alt="" />
+                        <img class="room-fixture fixture-decor-257" src="assets/figma/light-decor-257.svg" alt="" />
+                        <img class="room-fixture fixture-decor-269" src="assets/figma/light-decor-269.svg" alt="" />
+                      </div>
+
+                      <svg class="electric-lines room-smart-lines" viewBox="0 0 1000 760" aria-hidden="true">
+                        <path d="M120 560 C245 450 358 410 455 330 S650 185 858 116" />
+                        <path d="M175 604 C310 520 420 520 536 420 S690 330 842 316" />
+                        <path d="M300 456 C405 390 455 306 565 286 S742 336 882 222" />
+                      </svg>
+                      <span class="room-camera room-camera-a camera" aria-hidden="true"></span>
+                      <span class="room-camera room-camera-b camera" aria-hidden="true"></span>
+                      <span class="smart-pulse" aria-hidden="true"></span>
                     </div>
-                    <div class="house-shadow"></div>
-                    <div class="house-body">
-                      <span class="house-window window-front"></span>
-                      <span class="house-window window-side"></span>
-                      <span class="room-glow room-a"></span>
-                      <span class="room-glow room-b"></span>
-                      <span class="door"></span>
-                      <span class="electric-box"></span>
-                      <span class="camera camera-a"></span>
-                      <span class="camera camera-b"></span>
-                    </div>
-                    <div class="roof roof-main"></div>
-                    <div class="roof roof-side"></div>
-                    <div class="roof-tiles" aria-hidden="true"></div>
-                    <svg class="electric-lines" viewBox="0 0 360 260" aria-hidden="true">
-                      <path d="M58 210 C90 158 134 140 176 112 S262 60 318 38" />
-                      <path d="M72 224 C118 184 148 184 184 150 S236 116 304 102" />
-                      <path d="M92 190 C130 164 150 132 188 124 S248 132 290 84" />
-                    </svg>
-                    <div class="smart-pulse"></div>
                   </div>
                 </div>
 

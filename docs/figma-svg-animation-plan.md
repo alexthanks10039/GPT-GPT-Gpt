@@ -31,6 +31,29 @@
 
 ## Результат анализа файлов
 
+## Подтвержденная карта слоев
+
+Подтверждено пользователем 2026-05-17:
+
+- `lights-decor`: `Rectangle 234.svg`, `Rectangle 235.svg`, `Rectangle 236.svg`, `Rectangle 237.svg`, `Rectangle 256.svg`, `Rectangle 257.svg`, `Rectangle 269.svg`.
+- Эти элементы относятся к коротким светильникам и дополнительному/декоративному освещению.
+- В логике калькулятора этот слой должен включаться состоянием `decorLight` и CSS-классом `.is-decor` на `.house-stage`.
+- `lights-main`: `Rectangle 224.svg`.
+- `Rectangle 224.svg` определяется как основной свет: это самый длинный линейный световой профиль, визуально отличающийся от коротких декоративных светильников.
+- В логике калькулятора слой `lights-main` должен быть базовым активным светом помещения и оставаться видимым в обычном состоянии модели.
+- `lights-window`: `Rectangle 268.svg`, `Rectangle 271.svg`, `Rectangle 272.svg`.
+- Эти элементы автоматически отнесены к оконной/угловой световой группе: их форма похожа на диагональные элементы окна или световой контур около окна, а не на короткие отдельные светильники.
+- В логике калькулятора слой `lights-window` можно связывать с оконной подсветкой, базовым светом помещения или отдельной анимацией окна.
+
+Итоговая рабочая группировка:
+
+- `object`: `Group 369.svg` - помещение без светильников.
+- `lights-main`: `Rectangle 224.svg`.
+- `lights-decor`: `Rectangle 234.svg`, `Rectangle 235.svg`, `Rectangle 236.svg`, `Rectangle 237.svg`, `Rectangle 256.svg`, `Rectangle 257.svg`, `Rectangle 269.svg`.
+- `lights-window`: `Окно.svg`, `Rectangle 268.svg`, `Rectangle 271.svg`, `Rectangle 272.svg`.
+
+Перед внедрением в production-анимацию все еще лучше экспортировать общий Figma-frame с группами `object`, `lights-main`, `lights-decor`, `lights-window` в единой системе координат. Отдельные `Rectangle *.svg` пригодны как источники слоев, но у них локальные `viewBox`, поэтому точное позиционирование относительно помещения придется восстанавливать вручную или через общий frame-экспорт.
+
 ### Group 370.svg
 
 - Размер: `1298 x 658`, `viewBox="0 0 1298 658"`.
@@ -147,10 +170,19 @@
 
 ## Следующий шаг реализации
 
-1. Скопировать SVG в `assets/figma/`.
-2. Создать нормализованный inline SVG partial или вставить SVG прямо в `index.html`.
-3. Обернуть три экспорта в управляемые группы.
-4. Согласовать scale/translate для `Group 370.svg` и `Окно.svg` поверх `Group 369.svg`.
-5. Заменить текущую CSS-модель `.house-model` на `.room-model`.
-6. Добавить CSS-анимации opacity/filter/transform для слоев.
-7. Проверить desktop/mobile через Playwright.
+1. Скопировать SVG в `assets/figma/`. Выполнено 2026-05-18.
+2. Создать нормализованный inline SVG partial или вставить SVG прямо в `index.html`. Текущая реализация использует локальные SVG/PNG ассеты через `<img>`, чтобы сохранить простую статическую архитектуру проекта.
+3. Обернуть экспорты в управляемые группы. Выполнено: `object`, `lights-main`, `lights-window`, `lights-decor`.
+4. Согласовать scale/translate для слоев поверх `room-object.svg`. Выполнено вручную через CSS-позиционирование в `.figma-room-model`.
+5. Заменить текущую CSS-модель `.house-model` на Figma-модель. Выполнено: контейнер `.house-model` сохранен для совместимости, добавлен модификатор `.figma-room-model`.
+6. Добавить CSS-анимации opacity/filter/transform для слоев. Выполнено: `decorLight`, `smartHome`, `cctv`, `commercialPower` и `premium` управляют видимостью/подсветкой слоев.
+7. Проверить desktop/mobile через Playwright. Выполнено: ассеты грузятся без 404, мобильный overflow отсутствует.
+
+## Внедрение в проект 2026-05-18
+
+- Добавлена папка `assets/figma/` с локальными ассетами модели помещения.
+- В `index.html` блок `.house-stage` теперь содержит Figma-модель вместо прежнего CSS-домика.
+- Старый контракт калькулятора сохранен: `data-house-stage`, `data-house-model`, классы `.is-smart`, `.is-decor`, `.is-security`, `.is-commercial`, `.is-outdoor`, `.is-premium`.
+- В `styles.css` добавлены стили `.figma-room-model`, `.room-layer-main`, `.room-layer-window`, `.room-layer-decor`, `.room-smart-lines`, `.room-camera`.
+- Базовый свет и окно видимы по умолчанию, декоративные светильники включаются через `decorLight` или `premium`.
+- Проверка выполнена через desktop/mobile preview: ассеты модели загружаются, активные состояния калькулятора переключают слои, горизонтального overflow на mobile нет.
