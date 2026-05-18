@@ -186,3 +186,10 @@
 - В `styles.css` добавлены стили `.figma-room-model`, `.room-layer-main`, `.room-layer-window`, `.room-layer-decor`, `.room-smart-lines`, `.room-camera`.
 - Базовый свет и окно видимы по умолчанию, декоративные светильники включаются через `decorLight` или `premium`.
 - Проверка выполнена через desktop/mobile preview: ассеты модели загружаются, активные состояния калькулятора переключают слои, горизонтального overflow на mobile нет.
+## Implementation update 2026-05-18
+
+- Принят master-frame подход: `Frame 369 (1).svg` стал источником координат для текущей room animation.
+- Новые runtime-ассеты лежат в `assets/figma-room/` и имеют общий `viewBox="0 0 2801 1796"`.
+- Для тестирования создан baseline harness: `baselines/figma-room-animation-test/`.
+- Для дальнейшей калибровки использовать `docs/figma-room-layer-coordinates.md`, а не старые CSS-проценты `.figma-room-model`.
+- Старые `assets/figma/` оставлены как исторический экспорт/reference.

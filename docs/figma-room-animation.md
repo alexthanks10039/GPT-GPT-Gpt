@@ -120,8 +120,8 @@ CSS использует эти значения для:
 ```js
 stage.classList.toggle("energy-low", payload.energyLevel >= 10);
 stage.classList.toggle("energy-mid", payload.energyLevel >= 35);
-stage.classList.toggle("energy-high", payload.energyLevel >= 60);
-stage.classList.toggle("energy-max", payload.energyLevel >= 82);
+stage.classList.toggle("energy-high", payload.energyLevel >= 65);
+stage.classList.toggle("energy-max", payload.energyLevel >= 80);
 ```
 
 Они нужны, чтобы включать группы света постепенно, а не просто делать один общий opacity.
@@ -285,3 +285,11 @@ http://127.0.0.1:8020/index.html#calculator
 - premium/smart/security/decor состояния включают дополнительные эффекты;
 - submit формы не сломан;
 - `script.js` проходит синтаксическую проверку.
+## Calibration update 2026-05-18
+
+- Новая калибровка выполнена по `Frame 369 (1).svg`.
+- Слои перенесены из раннего `assets/figma/` в `assets/figma-room/`.
+- Все новые SVG-ассеты используют общий `viewBox="0 0 2801 1796"`.
+- Старый риск с отдельными локальными viewBox снят для текущей версии: CSS больше не подгоняет каждый светильник процентами, а фиксирует все overlay-слои full-frame.
+- Актуальная карта координат: `docs/figma-room-layer-coordinates.md`.
+- Debug mode: `?debugRoomLayers=1#calculator` или `window.setRoomLayerDebug(true)`.

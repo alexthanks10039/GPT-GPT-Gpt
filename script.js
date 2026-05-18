@@ -194,6 +194,17 @@ const setText = (selector, value) => {
   });
 };
 
+function initRoomLayerDebugMode() {
+  const params = new URLSearchParams(window.location.search);
+  const shouldDebug = params.has("debugRoomLayers") || params.get("roomDebug") === "1";
+  document.body.classList.toggle("debug-room-layers", shouldDebug);
+
+  window.setRoomLayerDebug = (enabled = !document.body.classList.contains("debug-room-layers")) => {
+    document.body.classList.toggle("debug-room-layers", Boolean(enabled));
+    return document.body.classList.contains("debug-room-layers");
+  };
+}
+
 const getCssUrl = (name) =>
   getComputedStyle(document.documentElement)
     .getPropertyValue(name)
@@ -381,9 +392,14 @@ function updateHouseVisual(payload) {
 
   stage.style.setProperty("--energy", payload.energyLevel);
   stage.style.setProperty("--light-strength", (payload.energyLevel / 100).toFixed(2));
+  stage.dataset.energyLevel = String(payload.energyLevel);
   setText("[data-energy-label]", payload.energyLevel);
 
   const has = (key) => calculatorState.extras.includes(key);
+  stage.classList.toggle("energy-low", payload.energyLevel >= 10);
+  stage.classList.toggle("energy-mid", payload.energyLevel >= 35);
+  stage.classList.toggle("energy-high", payload.energyLevel >= 65);
+  stage.classList.toggle("energy-max", payload.energyLevel >= 80);
   stage.classList.toggle("is-smart", has("smartHome"));
   stage.classList.toggle("is-decor", has("decorLight"));
   stage.classList.toggle("is-security", has("cctv"));
@@ -1467,6 +1483,7 @@ function initEditorPanel() {
 }
 
 applySiteSettings(siteSettings);
+initRoomLayerDebugMode();
 initCalculator();
 initEditorPanel();
 

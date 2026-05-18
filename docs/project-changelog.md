@@ -85,3 +85,14 @@ python ingest.py
 - CSS/HTML изменения проверяются через локальный preview.
 - После layout-правок нужно проверять desktop и mobile.
 - Для Git перед коммитом используется `git diff --check`.
+
+## Figma room animation calibration 2026-05-18
+
+- Модель помещения переведена на `assets/figma-room/`, собранные из `Frame 369 (1).svg`.
+- Все новые SVG-слои используют общий master `viewBox="0 0 2801 1796"`, поэтому светильники, окно, ambient glow и reflections выровнены через единую Figma-систему координат.
+- В `styles.css` добавлен блок `/* Figma room layer coordinates */` и debug mode `body.debug-room-layers`.
+- В `script.js` добавлены визуальные threshold-классы `energy-low`, `energy-mid`, `energy-high`, `energy-max`, `data-energy-level` и helper `window.setRoomLayerDebug()`.
+- Добавлен недостающий `@keyframes securityBlink` для security markers.
+- Создана карта координат `docs/figma-room-layer-coordinates.md`.
+- Создан baseline/test harness `baselines/figma-room-animation-test/`.
+- Бизнес-логика калькулятора и submit формы не менялись.

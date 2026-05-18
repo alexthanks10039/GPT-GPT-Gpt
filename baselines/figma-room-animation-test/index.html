@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Figma room animation baseline</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="../../styles.css?v=20260518-3" />
+    <style>
+      body {
+        min-height: 100vh;
+        padding: 32px;
+        background: #05080c;
+      }
+
+      .baseline-shell {
+        width: min(960px, 100%);
+        margin: 0 auto;
+      }
+
+      .baseline-toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+        margin: 0 0 24px;
+      }
+
+      .baseline-toolbar button,
+      .baseline-toolbar input {
+        min-height: 40px;
+      }
+
+      .baseline-toolbar button {
+        border: 1px solid rgba(77, 184, 255, 0.28);
+        border-radius: 6px;
+        padding: 0 14px;
+        color: #f5f8ff;
+        background: rgba(255, 255, 255, 0.07);
+      }
+
+      .baseline-toolbar button.is-on {
+        border-color: rgba(77, 184, 255, 0.88);
+        background: rgba(22, 139, 255, 0.32);
+      }
+
+      .baseline-stage {
+        min-height: 620px;
+      }
+    </style>
+  </head>
+  <body class="debug-room-layers">
+    <main class="baseline-shell">
+      <div class="baseline-toolbar" aria-label="Animation state controls">
+        <button type="button" data-toggle="is-smart">Smart</button>
+        <button type="button" data-toggle="is-decor">Decor</button>
+        <button type="button" data-toggle="is-security">Security</button>
+        <button type="button" data-toggle="is-commercial">Commercial</button>
+        <button type="button" data-toggle="is-premium">Premium</button>
+        <button type="button" data-debug>Debug</button>
+        <label>
+          Energy
+          <input type="range" min="0" max="100" step="1" value="65" data-energy />
+        </label>
+      </div>
+
+      <section class="house-stage baseline-stage is-smart is-decor" data-house-stage style="--energy:65; --light-strength:.65">
+        <div class="house-model room-model" data-house-model aria-label="Анимированная модель помещения из Figma">
+          <div class="room-scene">
+            <span class="room-layer room-base" data-layer-name="base" aria-hidden="true">
+              <img src="../../assets/figma-room/room-base.svg" alt="" />
+              <span class="room-layer-label">base</span>
+            </span>
+            <span class="room-layer room-ambient" data-layer-name="ambient" aria-hidden="true">
+              <img src="../../assets/figma-room/ambient-glow.svg" alt="" />
+              <span class="room-layer-label">ambient</span>
+            </span>
+            <span class="room-layer room-window" data-layer-name="window" aria-hidden="true">
+              <img src="../../assets/figma-room/room-window.svg" alt="" />
+              <span class="room-layer-label">window</span>
+            </span>
+            <span class="room-layer room-light-main" data-layer-name="main-light" aria-hidden="true">
+              <img src="../../assets/figma-room/light-main-long.svg" alt="" />
+              <span class="room-layer-label">main</span>
+            </span>
+            <span class="room-layer room-light-strip-01" data-layer-name="strip-01" aria-hidden="true">
+              <img src="../../assets/figma-room/light-strip-01.svg" alt="" />
+              <span class="room-layer-label">strip 01</span>
+            </span>
+            <span class="room-layer room-light-strip-02" data-layer-name="strip-02" aria-hidden="true">
+              <img src="../../assets/figma-room/light-strip-02.svg" alt="" />
+              <span class="room-layer-label">strip 02</span>
+            </span>
+            <span class="room-layer room-light-strip-03" data-layer-name="strip-03" aria-hidden="true">
+              <img src="../../assets/figma-room/light-strip-03.svg" alt="" />
+              <span class="room-layer-label">strip 03</span>
+            </span>
+            <span class="room-layer room-light-strip-04" data-layer-name="strip-04" aria-hidden="true">
+              <img src="../../assets/figma-room/light-strip-04.svg" alt="" />
+              <span class="room-layer-label">strip 04</span>
+            </span>
+            <span class="room-layer room-light-left-01" data-layer-name="left-01" aria-hidden="true">
+              <img src="../../assets/figma-room/light-left-01.svg" alt="" />
+              <span class="room-layer-label">left 01</span>
+            </span>
+            <span class="room-layer room-light-left-02" data-layer-name="left-02" aria-hidden="true">
+              <img src="../../assets/figma-room/light-left-02.svg" alt="" />
+              <span class="room-layer-label">left 02</span>
+            </span>
+            <span class="room-layer room-light-diagonal-01" data-layer-name="diagonal-01" aria-hidden="true">
+              <img src="../../assets/figma-room/light-diagonal-01.svg" alt="" />
+              <span class="room-layer-label">diagonal 01</span>
+            </span>
+            <span class="room-layer room-light-diagonal-02" data-layer-name="diagonal-02" aria-hidden="true">
+              <img src="../../assets/figma-room/light-diagonal-02.svg" alt="" />
+              <span class="room-layer-label">diagonal 02</span>
+            </span>
+            <span class="room-layer room-light-corner-01" data-layer-name="corner-01" aria-hidden="true">
+              <img src="../../assets/figma-room/light-corner-01.svg" alt="" />
+              <span class="room-layer-label">corner</span>
+            </span>
+            <span class="room-layer room-light-small-01" data-layer-name="small-01" aria-hidden="true">
+              <img src="../../assets/figma-room/light-small-01.svg" alt="" />
+              <span class="room-layer-label">small 01</span>
+            </span>
+            <span class="room-layer room-light-small-02" data-layer-name="small-02" aria-hidden="true">
+              <img src="../../assets/figma-room/light-small-02.svg" alt="" />
+              <span class="room-layer-label">small 02</span>
+            </span>
+            <span class="room-layer room-reflection-a" data-layer-name="reflection-a" aria-hidden="true">
+              <img src="../../assets/figma-room/reflection-bed.svg" alt="" />
+              <span class="room-layer-label">reflection A</span>
+            </span>
+            <span class="room-layer room-reflection-b" data-layer-name="reflection-b" aria-hidden="true">
+              <img src="../../assets/figma-room/reflection-window.svg" alt="" />
+              <span class="room-layer-label">reflection B</span>
+            </span>
+            <span class="room-layer room-reflection-c" data-layer-name="reflection-c" aria-hidden="true">
+              <img src="../../assets/figma-room/reflection-floor.svg" alt="" />
+              <span class="room-layer-label">reflection C</span>
+            </span>
+            <span class="room-layer room-smart-grid" data-layer-name="smart-grid" aria-hidden="true">
+              <svg viewBox="0 0 2801 1796" focusable="false">
+                <path d="M706 1188 C972 1038 1174 936 1398 809 S1832 584 2206 773" />
+                <path d="M852 1268 C1094 1140 1274 1108 1488 948 S1794 730 2124 844" />
+                <path d="M974 1028 C1182 968 1298 804 1518 772 S1834 842 2058 682" />
+              </svg>
+              <span class="room-layer-label">smart grid</span>
+            </span>
+            <span class="room-security-dot room-security-dot-a" aria-hidden="true"></span>
+            <span class="room-security-dot room-security-dot-b" aria-hidden="true"></span>
+            <span class="smart-pulse" aria-hidden="true"></span>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const stage = document.querySelector("[data-house-stage]");
+      const energy = document.querySelector("[data-energy]");
+      const setEnergy = (value) => {
+        const numeric = Number(value);
+        stage.style.setProperty("--energy", numeric);
+        stage.style.setProperty("--light-strength", (numeric / 100).toFixed(2));
+        stage.dataset.energyLevel = String(numeric);
+        stage.classList.toggle("energy-low", numeric >= 10);
+        stage.classList.toggle("energy-mid", numeric >= 35);
+        stage.classList.toggle("energy-high", numeric >= 65);
+        stage.classList.toggle("energy-max", numeric >= 80);
+      };
+
+      energy.addEventListener("input", () => setEnergy(energy.value));
+      setEnergy(energy.value);
+
+      document.querySelectorAll("[data-toggle]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const className = button.dataset.toggle;
+          stage.classList.toggle(className);
+          button.classList.toggle("is-on", stage.classList.contains(className));
+        });
+        button.classList.toggle("is-on", stage.classList.contains(button.dataset.toggle));
+      });
+
+      document.querySelector("[data-debug]").addEventListener("click", (event) => {
+        const enabled = document.body.classList.toggle("debug-room-layers");
+        event.currentTarget.classList.toggle("is-on", enabled);
+      });
+    </script>
+  </body>
+</html>

@@ -139,3 +139,13 @@ VoltEdge - статический лендинг для услуг электр�
 Скрипты в `rag/` индексируют эти документы в локальную ChromaDB и позволяют получать релевантный контекст по вопросу.
 
 Для истории решений и последних UI-правок смотри `docs/project-changelog.md`.
+
+## Figma room animation baseline 2026-05-18
+
+- Анимированная модель помещения в калькуляторе теперь использует `assets/figma-room/`.
+- Источник текущей калибровки: `C:/Users/user/Downloads/Frame 369 (1).svg`.
+- Все SVG-слои комнаты приведены к общему `viewBox="0 0 2801 1796"`, поэтому overlay-светильники и reflections фиксируются full-frame CSS-координатами и не съезжают относительно базы.
+- Основной CSS-контракт: `.house-stage`, `.room-model`, `.room-layer`, `.room-light-*`, `.room-window`, `.room-reflection-*`, `.room-ambient`, `.room-smart-grid`, `.room-security-dot`.
+- Карта координат и состояния анимации зафиксированы в `docs/figma-room-layer-coordinates.md`.
+- Тестовая baseline-страница создана в `baselines/figma-room-animation-test/`.
+- Debug mode: `?debugRoomLayers=1#calculator`, `?roomDebug=1#calculator` или `window.setRoomLayerDebug(true)`.
