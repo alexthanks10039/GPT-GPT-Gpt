@@ -11,6 +11,7 @@
 - Основные файлы лендинга: `index.html`, `styles.css`, `script.js`.
 - Лендинг работает как статический сайт без сборщика.
 - Локальный preview запускается через HTTP server, текущий рабочий адрес: `http://127.0.0.1:4174/`.
+- Telegram-направление вынесено в отдельный модуль `BOT TG/` внутри основного репозитория.
 
 ## Редакт-панель
 
@@ -60,6 +61,7 @@
 - Hidden-поля формы: `calculatorPayload`, `estimatedPrice`, `calculatorArea`, `calculatorOptions`, `calculatorBreakdown`, `calculatedAt`, `leadSource`.
 - `window.lastLeadPayload` содержит данные формы, расчет, breakdown, дату расчета и источник.
 - Отправка формы пока клиентская: backend/CRM не подключены.
+- Следующий шаг интеграции: отправлять `leadPayload` на `POST /api/leads` в `BOT TG/backend`.
 
 ## Форма заявки
 
@@ -68,12 +70,90 @@
 - Порядок закреплен через CSS `order`, потому что редакт-панель управляет порядком `label` внутри формы.
 - Проверено: кнопка ниже последнего поля, note ниже кнопки, горизонтального overflow нет.
 
+## Telegram Bot / Mini App module 2026-05-20
+
+- Создана папка `BOT TG/` как отдельный модуль внутри репозитория сайта.
+- Проанализирован и логически совмещен отдельный репозиторий `Telegram-bot-svet-`: его концепция перенесена как Flutter Web Telegram Mini App skeleton.
+- Добавлены документы `BOT TG/README.md`, `BOT TG/INTEGRATION_ANALYSIS.md`, `BOT TG/API_CONTRACT.md`.
+- Добавлен Flutter Mini App skeleton:
+  - `BOT TG/pubspec.yaml`
+  - `BOT TG/web/index.html`
+  - `BOT TG/lib/main.dart`
+  - `BOT TG/lib/models/work_object.dart`
+  - `BOT TG/lib/services/mock_object_service.dart`
+  - `BOT TG/lib/services/api_service.dart`
+- Mini App сейчас mock-only: показывает список объектов, карточку объекта, статусы и базовые действия; backend-интеграция Mini App ещё не завершена.
+- Добавлен backend Telegram-модуля в `BOT TG/backend/`:
+  - `package.json`
+  - `README.md`
+  - `src/index.js`
+  - `src/leads.routes.js`
+  - `src/telegram.service.js`
+  - `src/test-send.js`
+- Backend использует Node.js/Express и переменные окружения `TG_KEY`, `OWNER_ID`, `MINI_APP_URL`.
+- Добавлен `POST /api/leads`: принимает заявку, валидирует `name` и `phone`, нормализует данные и отправляет уведомление владельцу через Telegram Bot API.
+- Добавлен smoke test `npm run test:telegram` через `src/test-send.js`.
+- Текущий `OWNER_ID`: `477062399`.
+
+## Telegram bot navigation and lead workflow 2026-05-20
+
+- Добавлена внутренняя UX-навигация Telegram-бота:
+  - главное меню;
+  - новые заявки;
+  - заявки в работе;
+  - статистика;
+  - сотрудники;
+  - Mini App;
+  - настройки;
+  - постоянная нижняя клавиатура.
+- Добавлены файлы:
+  - `BOT TG/backend/src/leads.store.js`
+  - `BOT TG/backend/src/employees.store.js`
+  - `BOT TG/backend/src/bot-ui.service.js`
+  - `BOT TG/backend/src/bot.routes.js`
+- Добавлено временное in-memory хранилище заявок. После перезапуска backend заявки очищаются; это MVP, позже нужна база данных.
+- Добавлены статусы заявок:
+  - `new`
+  - `in_work`
+  - `reassigned`
+  - `done`
+  - `cancelled`
+- Под сообщением заявки теперь предусмотрены кнопки:
+  - `Взять в работу`
+  - `Передать`
+  - `WhatsApp`
+  - `Позвонить`
+  - `Статистика`
+  - `Главное меню`
+  - `Mini App`
+- Добавлена базовая статистика заявок:
+  - всего заявок;
+  - новые;
+  - в работе;
+  - выполненные;
+  - переназначенные;
+  - отменённые.
+- Добавлено переназначение заявки на mock-сотрудников из `employees.store.js`.
+- Добавлен endpoint `POST /api/telegram/webhook` для обработки callback-кнопок и текстовых команд.
+- Поддерживаемые команды:
+  - `/start`
+  - `/reload`
+  - `reload`
+  - `перезапуск`
+  - `Главное меню`
+  - `Статистика`
+  - `Мини-Эпп`
+- `/reload` не перезапускает Node.js процесс; он обновляет клавиатуру и возвращает пользователя в главное меню.
+- Для полноценной обработки inline-кнопок после деплоя backend нужно установить Telegram webhook на публичный URL.
+
 ## RAG-база знаний
 
 - Добавлена папка `docs/` как источник знаний.
 - Добавлена папка `rag/` со скриптами `ingest.py`, `query.py`, `requirements.txt` и `README.md`.
 - Используется стек ChromaDB + LangChain + sentence-transformers.
 - `rag/chroma_db/`, `.venv`, `__pycache__` и Python-cache файлы исключены из Git.
+- Добавлен документ `docs/telegram-bot-context.md` для фиксации текущего состояния Telegram-модуля.
+- Обновлён `docs/project-context.md`, добавлена ссылка на Telegram-модуль и правила работы с `BOT TG/`.
 - Для обновления локального векторного индекса нужно выполнить:
 
 ```powershell
@@ -84,6 +164,9 @@ python ingest.py
 ## Проверки
 
 - JS-синтаксис проверяется через `node --check script.js`.
+- Backend Telegram-модуля проверяется через `npm run dev` из `BOT TG/backend`.
+- Health check backend: `GET http://localhost:3000/health`.
+- Telegram smoke test: `npm run test:telegram`.
 - CSS/HTML изменения проверяются через локальный preview.
 - После layout-правок нужно проверять desktop и mobile.
 - Для Git перед коммитом используется `git diff --check`.
