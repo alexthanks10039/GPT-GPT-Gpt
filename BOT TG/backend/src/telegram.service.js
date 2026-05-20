@@ -1,3 +1,5 @@
+import { buildLeadMessage, leadActionKeyboard, persistentNavigationKeyboard } from './bot-ui.service.js';
+
 const getConfig = () => {
   const token = process.env.TG_KEY;
   const ownerId = process.env.OWNER_ID;
@@ -13,106 +15,67 @@ const getConfig = () => {
   return { token, ownerId };
 };
 
-const formatPrice = (value) => {
-  const number = Number(value);
-  if (!Number.isFinite(number)) return null;
-  return `${number.toLocaleString('ru-RU')} ₸`;
-};
+export const telegramApi = async (method, payload) => {
+  const { token } = getConfig();
 
-const normalizeOptions = (calculatorData) => {
-  if (!calculatorData || typeof calculatorData !== 'object') return [];
-
-  if (Array.isArray(calculatorData.options)) return calculatorData.options;
-  if (Array.isArray(calculatorData.services)) return calculatorData.services;
-
-  return [];
-};
-
-const formatCalculatorData = (calculatorData) => {
-  if (!calculatorData || typeof calculatorData !== 'object') return [];
-
-  const lines = [];
-  const area = calculatorData.area || calculatorData.calculatorArea;
-  const options = normalizeOptions(calculatorData);
-
-  if (area) {
-    lines.push(`📐 Площадь: ${area} м²`);
-  }
-
-  if (options.length > 0) {
-    lines.push(`💡 Опции: ${options.join(', ')}`);
-  }
-
-  return lines;
-};
-
-export const buildOwnerLeadMessage = (lead) => {
-  const lines = ['🆕 Новая заявка с сайта', ''];
-
-  lines.push(`👤 Имя: ${lead.name}`);
-  lines.push(`📞 Телефон: ${lead.phone}`);
-
-  if (lead.objectType) lines.push(`🏠 Объект: ${lead.objectType}`);
-  if (lead.address) lines.push(`📍 Адрес: ${lead.address}`);
-  if (lead.service) lines.push(`🛠 Услуга: ${lead.service}`);
-
-  const calculatorLines = formatCalculatorData(lead.calculatorData);
-  const price = formatPrice(lead.calculatedPrice);
-
-  if (calculatorLines.length > 0 || price) {
-    lines.push('');
-    lines.push(...calculatorLines);
-    if (price) lines.push(`💰 Расчёт калькулятора: ${price}`);
-  }
-
-  if (lead.comment) {
-    lines.push('');
-    lines.push('💬 Комментарий:');
-    lines.push(lead.comment);
-  }
-
-  lines.push('');
-  lines.push(`🌐 Источник: ${lead.source || 'сайт'}`);
-  if (lead.sourcePage) lines.push(`📄 Страница: ${lead.sourcePage}`);
-  lines.push(`🕒 Время: ${new Date().toLocaleString('ru-RU')}`);
-
-  return lines.join('\n');
-};
-
-export const sendOwnerLeadNotification = async (lead) => {
-  const { token, ownerId } = getConfig();
-  const message = buildOwnerLeadMessage(lead);
-
-  const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+  const response = await fetch(`https://api.telegram.org/bot${token}/${method}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({
-      chat_id: ownerId,
-      text: message,
-      reply_markup: {
-        inline_keyboard: [
-          [
-            {
-              text: '📞 Позвонить',
-              callback_data: `lead:call:${lead.id || 'new'}`,
-            },
-            {
-              text: '🛠 Взять в работу',
-              callback_data: `lead:take:${lead.id || 'new'}`,
-            },
-          ],
-        ],
-      },
-    }),
+    body: JSON.stringify(payload),
   });
 
   const data = await response.json();
 
   if (!response.ok || !data.ok) {
-    throw new Error(data.description || 'Telegram message was not sent');
+    throw new Error(data.description || `Telegram ${method} failed`);
   }
 
   return data;
+};
+
+export const sendMessage = async ({ chatId, text, replyMarkup }) => {
+  return telegramApi('sendMessage', {
+    chat_id: chatId,
+    text,
+    reply_markup: replyMarkup,
+    disable_web_page_preview: true,
+  });
+};
+
+export const answerCallbackQuery = async ({ callbackQueryId, text }) => {
+  return telegramApi('answerCallbackQuery', {
+    callback_query_id: callbackQueryId,
+    text,
+    show_alert: false,
+  });
+};
+
+export const editMessage = async ({ chatId, messageId, text, replyMarkup }) => {
+  return telegramApi('editMessageText', {
+    chat_id: chatId,
+    message_id: messageId,
+    text,
+    reply_markup: replyMarkup,
+    disable_web_page_preview: true,
+  });
+};
+
+export const sendOwnerLeadNotification = async (lead) => {
+  const { ownerId } = getConfig();
+
+  await sendMessage({
+    chatId: ownerId,
+    text: buildLeadMessage(lead),
+    replyMarkup: leadActionKeyboard(lead),
+  });
+
+  await sendMessage({
+    chatId: ownerId,
+    text: 'Навигация доступна снизу. Из любого раздела можно вернуться в главное меню.',
+    replyMarkup: persistentNavigationKeyboard(),
+  });
+
+  return { ok: true };
 };
