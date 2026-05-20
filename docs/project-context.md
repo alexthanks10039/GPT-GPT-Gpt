@@ -1,6 +1,6 @@
 # VoltEdge Project Context
 
-Дата обновления: 2026-05-20
+Дата обновления: 2026-05-21
 
 ## Назначение проекта
 
@@ -119,7 +119,7 @@ VoltEdge - статический лендинг для услуг электр�
 - `calculatedAt`
 - `leadSource`
 
-Отправка сейчас не уходит на backend или CRM. Форма готовит клиентский payload и сохраняет его в `window.lastLeadPayload` для проверки и дальнейшей интеграции.
+Форма готовит клиентский payload, сохраняет его в `window.lastLeadPayload` для QA и отправляет заявку на backend через `siteSettings.integrations.leadApiUrl`. Локальный endpoint по умолчанию: `http://localhost:3000/api/leads`.
 
 ## Telegram-модуль `BOT TG/`
 
@@ -151,7 +151,7 @@ BOT TG/
 - заявки хранятся в памяти backend и очищаются после перезапуска;
 - webhook требует публичный backend URL;
 - роли через Telegram ID ещё не реализованы окончательно;
-- форма сайта ещё не подключена к `POST /api/leads` окончательно;
+- форма сайта подключена к `POST /api/leads`; для production нужно заменить локальный endpoint на deployed backend URL;
 - Mini App пока работает на mock-данных.
 
 Полный контекст Telegram-модуля смотри в `docs/telegram-bot-context.md`.

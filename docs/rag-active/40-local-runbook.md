@@ -1,7 +1,7 @@
 # RAG Active 40 - Local Runbook
 
 Status: active operational runbook
-Updated: 2026-05-20
+Updated: 2026-05-21
 Scope: local commands, checks, backend testing
 
 ## Purpose
@@ -83,9 +83,27 @@ Telegram smoke test:
 npm run test:telegram
 ```
 
+Windows note:
+
+- `restart-project.sh` and `start-mini-app.sh` are Bash scripts. Run them from Git Bash or WSL.
+- In PowerShell, run the services manually:
+
+```powershell
+cd "C:\Users\user\Documents\Electro\BOT TG\backend"
+npm install
+npm run dev
+```
+
+Then open a second PowerShell for the static website:
+
+```powershell
+cd C:\Users\user\Documents\Electro
+python -m http.server 4174 --bind 127.0.0.1
+```
+
 ## Local website to backend request
 
-Current missing bridge:
+Current bridge:
 
 ```js
 await fetch('http://localhost:3000/api/leads', {
@@ -96,6 +114,12 @@ await fetch('http://localhost:3000/api/leads', {
 ```
 
 For production use deployed backend URL instead of localhost.
+
+The frontend setting path is:
+
+```text
+siteSettings.integrations.leadApiUrl
+```
 
 ## Git / QA checks
 

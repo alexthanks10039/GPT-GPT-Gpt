@@ -1,7 +1,7 @@
 # RAG Active 30 - Room Animation Current
 
 Status: active source of truth
-Updated: 2026-05-20
+Updated: 2026-05-21
 Scope: calculator room animation, Figma layers, visual states
 
 ## Current implementation
@@ -101,6 +101,25 @@ window.setRoomLayerDebug(false)
 Debug mode must not force hidden layers to become visually active.
 
 Layer labels should appear only on hover/focus.
+
+## Current technical fix
+
+`smart-pulse` must be inactive by default:
+
+```text
+.smart-pulse -> opacity: 0; animation: none
+```
+
+Only `.house-stage.is-smart` and `.house-stage.is-premium` may enable the `smartPulse` keyframes. This prevents the smart pulse from staying visible in base/off states while the keyframe animation overrides base opacity.
+
+`room-smart-grid` must also be inactive by default:
+
+```text
+.room-smart-grid -> opacity: 0; visibility: hidden
+.room-smart-grid path -> animation: none
+```
+
+Only `.house-stage.is-smart` and `.house-stage.is-premium` may show the grid and run `lineFlow`. This keeps debug/base states from showing a permanent smart grid.
 
 ## Edit panel controls
 

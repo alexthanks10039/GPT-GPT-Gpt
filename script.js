@@ -196,6 +196,7 @@ const AUTH_KEY = "voltedge-editor-auth-v1";
 const DEFAULT_EDITOR_PASSWORD = "admin2026!";
 // Temporary dev switch: set to false before production to restore required editor password.
 const DEV_AUTH_BYPASS = true;
+const LEAD_REQUEST_TIMEOUT_MS = 5000;
 const ROOM_DEBUG_FROM_URL = new URLSearchParams(window.location.search).has("debugRoomLayers") || new URLSearchParams(window.location.search).get("roomDebug") === "1";
 let editorSessionAuthenticated = false;
 
@@ -948,6 +949,9 @@ function getSeoDefaults() {
 
 function getDefaultSettings() {
   return {
+    integrations: {
+      leadApiUrl: "http://localhost:3000/api/leads",
+    },
     content: {
       brand: getText(".brand span:last-child") || "VoltEdge",
       phone: getText(".phone") || "+7 700 123 45 67",
@@ -1021,6 +1025,55 @@ function normalizeWhatsApp(whatsapp, phone) {
 
   const phoneDigits = getPhoneDigits(phone);
   return phoneDigits ? `https://wa.me/${phoneDigits}` : "#";
+}
+
+function getLeadApiUrl() {
+  return String(siteSettings?.integrations?.leadApiUrl || defaultSettings?.integrations?.leadApiUrl || "").trim();
+}
+
+async function sendLeadPayload(leadPayload) {
+  const leadApiUrl = getLeadApiUrl();
+  if (!leadApiUrl) {
+    throw new Error("Lead API URL is not configured.");
+  }
+
+  const controller = new AbortController();
+  const timeoutId = window.setTimeout(() => controller.abort(), LEAD_REQUEST_TIMEOUT_MS);
+  let response;
+
+  try {
+    response = await fetch(leadApiUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(leadPayload),
+      signal: controller.signal,
+    });
+  } catch (error) {
+    if (error?.name === "AbortError") {
+      throw new Error("Lead API request timed out.");
+    }
+    throw error;
+  } finally {
+    window.clearTimeout(timeoutId);
+  }
+
+  let data = {};
+  try {
+    data = await response.json();
+  } catch {
+    data = {};
+  }
+
+  if (!response.ok || data.success === false) {
+    throw new Error(data.message || `Lead API request failed with ${response.status}`);
+  }
+
+  return {
+    status: response.status,
+    data,
+  };
 }
 
 function setHeroEyebrow(value) {
@@ -1672,7 +1725,7 @@ document.querySelectorAll(".nav a").forEach((link) => {
 
 setupAttributeAnimations();
 
-leadForm?.addEventListener("submit", (event) => {
+leadForm?.addEventListener("submit", async (event) => {
   event.preventDefault();
   leadForm.dataset.submitted = "true";
   renderCalculator();
@@ -1682,6 +1735,13 @@ leadForm?.addEventListener("submit", (event) => {
   const leadPayload = {
     name: formData.get("name"),
     phone: formData.get("phone"),
+    service: "Электромонтаж",
+    objectType: formData.get("object") || calculator.propertyType,
+    address: formData.get("area") ? `Площадь из формы: ${formData.get("area")}` : "",
+    comment: "",
+    calculatorData: calculator,
+    calculatedPrice: calculator.estimatedPrice,
+    sourcePage: `${window.location.pathname}${window.location.hash || ""}`,
     contactObjectType: formData.get("object"),
     contactArea: formData.get("area"),
     calculator,
@@ -1703,10 +1763,29 @@ leadForm?.addEventListener("submit", (event) => {
   formData.set("calculatedAt", calculator.calculatedAt);
   window.lastLeadPayload = leadPayload;
 
+  const submitButton = leadForm.querySelector("button[type='submit']");
+  if (submitButton) submitButton.disabled = true;
   if (formNote) {
-    formNote.textContent = `Заявка подготовлена. К ней прикреплен расчет: ${calculator.estimatedPriceFormatted}.`;
+    formNote.textContent = "Отправляем заявку и прикрепленный расчет...";
   }
-  runAnimation(leadForm, "glow", { duration: 900 });
-  leadForm.reset();
-  updateCalculatorPayloadInputs(calculator);
+
+  try {
+    const result = await sendLeadPayload(leadPayload);
+    if (formNote) {
+      formNote.textContent =
+        result.status === 202
+          ? `Заявка принята. Telegram-уведомление требует проверки, расчет прикреплен: ${calculator.estimatedPriceFormatted}.`
+          : `Заявка отправлена. К ней прикреплен расчет: ${calculator.estimatedPriceFormatted}.`;
+    }
+    runAnimation(leadForm, "glow", { duration: 900 });
+    leadForm.reset();
+    updateCalculatorPayloadInputs(calculator);
+  } catch {
+    if (formNote) {
+      formNote.textContent = "Не удалось отправить заявку. Проверьте backend /api/leads и попробуйте еще раз.";
+    }
+    runAnimation(leadForm, "shake", { duration: 420 });
+  } finally {
+    if (submitButton) submitButton.disabled = false;
+  }
 });

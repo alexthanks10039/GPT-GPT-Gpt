@@ -1,8 +1,21 @@
 # VoltEdge Project Changelog
 
-Дата обновления: 2026-05-20
+Дата обновления: 2026-05-21
 
 Этот документ является частью RAG-базы знаний проекта. Он фиксирует важные решения, правки интерфейса и архитектурные изменения, чтобы Codex/AI мог учитывать текущий контекст без повторного анализа всего кода.
+
+## Technical audit stabilization 2026-05-21
+
+- Added `POST /api/leads` request timeout so the form cannot stay stuck in the sending state when the local backend is unavailable.
+- Updated `BOT TG/rag/telegram-backend-rag.json` so the Telegram/backend RAG context now matches the connected lead form bridge.
+- Locked `.room-smart-grid` to smart/premium states only; base state now hides the layer and stops `lineFlow`.
+- Синхронизирована текущая рабочая ветка с актуальным GitHub `main`; рабочая ветка для фиксов: `codex/technical-audit-fixes`.
+- Добавлен frontend bridge формы к backend: `script.js` отправляет `leadPayload` на `siteSettings.integrations.leadApiUrl`, локально `http://localhost:3000/api/leads`.
+- Payload формы приведен к контракту `POST /api/leads`: `name`, `phone`, `service`, `objectType`, `address`, `calculatorData`, `calculatedPrice`, `source`, `sourcePage`.
+- В редакт-панель добавлено поле `Lead API URL` во вкладке `Данные`.
+- Исправлено visual-state поведение `.smart-pulse`: keyframes включаются только для `is-smart` и `is-premium`, базовое состояние больше не держит pulse видимым.
+- Исправлен horizontal overflow baseline room harness через ограничение ширины тестовой оболочки.
+- Обновлен active RAG-контекст: backend bridge, workspace drift, smart-pulse fix и Windows runbook.
 
 ## Базовая структура проекта
 
@@ -60,8 +73,8 @@
 - При submit формы в payload попадает расчет из калькулятора.
 - Hidden-поля формы: `calculatorPayload`, `estimatedPrice`, `calculatorArea`, `calculatorOptions`, `calculatorBreakdown`, `calculatedAt`, `leadSource`.
 - `window.lastLeadPayload` содержит данные формы, расчет, breakdown, дату расчета и источник.
-- Отправка формы пока клиентская: backend/CRM не подключены.
-- Следующий шаг интеграции: отправлять `leadPayload` на `POST /api/leads` в `BOT TG/backend`.
+- Отправка формы подключена к `POST /api/leads` в `BOT TG/backend` через `siteSettings.integrations.leadApiUrl`.
+- При ошибке сети/backend форма показывает ошибку и не сбрасывает введенные пользователем данные.
 
 ## Форма заявки
 

@@ -1324,7 +1324,7 @@ h3 {
   border: 1px solid rgba(77, 184, 255, 0.38);
   border-radius: 50%;
   opacity: 0;
-  animation: smartPulse 2.4s ease-out infinite;
+  animation: none;
 }
 
 .house-stage.is-smart .smart-pulse,
@@ -1332,6 +1332,11 @@ h3 {
 .house-stage.is-premium .smart-pulse,
 .house-stage.is-premium .room-glow {
   opacity: 0.78;
+}
+
+.house-stage.is-smart .smart-pulse,
+.house-stage.is-premium .smart-pulse {
+  animation: smartPulse 2.4s ease-out infinite;
 }
 
 .house-stage.is-decor .garden-light,
@@ -1734,9 +1739,12 @@ h3 {
 
 .room-smart-grid {
   opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
   transition:
     opacity var(--room-transition, 460ms) ease,
-    filter var(--room-transition, 460ms) ease;
+    filter var(--room-transition, 460ms) ease,
+    visibility 0s linear var(--room-transition, 460ms);
 }
 
 .room-smart-grid svg {
@@ -1750,7 +1758,7 @@ h3 {
   stroke-linecap: round;
   stroke-dasharray: 18 26;
   filter: drop-shadow(0 0 12px rgba(77, 184, 255, 0.72));
-  animation: lineFlow var(--room-smart-line-speed, 1.8s) linear infinite;
+  animation: none;
 }
 
 .room-security-dot {
@@ -1785,7 +1793,7 @@ h3 {
   border-radius: 50%;
   opacity: 0;
   transform: rotate(-8deg);
-  animation: smartPulse var(--room-pulse-speed, 2.4s) ease-out infinite;
+  animation: none;
 }
 
 .energy-mid .room-light-main,
@@ -1855,11 +1863,19 @@ h3 {
 .house-stage.is-smart .room-smart-grid,
 .house-stage.is-premium .room-smart-grid {
   opacity: calc(var(--room-smart-opacity-base, 0.18) + var(--light-strength) * var(--room-smart-opacity-range, 0.54));
+  visibility: visible;
+  transition-delay: 0s;
+}
+
+.house-stage.is-smart .room-smart-grid path,
+.house-stage.is-premium .room-smart-grid path {
+  animation: lineFlow var(--room-smart-line-speed, 1.8s) linear infinite;
 }
 
 .house-stage.is-smart .room-model .smart-pulse,
 .house-stage.is-premium .room-model .smart-pulse {
   opacity: 0.78;
+  animation: smartPulse var(--room-pulse-speed, 2.4s) ease-out infinite;
 }
 
 .house-stage.is-security .room-security-dot,
