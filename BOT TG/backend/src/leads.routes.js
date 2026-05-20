@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { sendOwnerLeadNotification } from './telegram.service.js';
+import { createLeadRecord } from './leads.store.js';
 
 export const leadsRouter = Router();
 
@@ -14,7 +15,7 @@ const normalizeLead = (body) => {
     phone: String(body.phone || '').trim(),
     service: body.service || 'Электромонтаж',
     objectType: body.objectType || body.contactObjectType || body.object || '',
-    address: body.address || body.district || '',
+    address: body.address || body.district || body.contactArea || '',
     comment: body.comment || body.message || '',
     calculatorData: body.calculatorData || body.calculator || null,
     calculatedPrice: body.calculatedPrice || body.estimatedPrice || null,
@@ -26,14 +27,16 @@ const normalizeLead = (body) => {
 };
 
 leadsRouter.post('/api/leads', async (req, res) => {
-  const lead = normalizeLead(req.body || {});
+  const normalizedLead = normalizeLead(req.body || {});
 
-  if (!required(lead.name) || !required(lead.phone)) {
+  if (!required(normalizedLead.name) || !required(normalizedLead.phone)) {
     return res.status(400).json({
       success: false,
       message: 'name and phone are required',
     });
   }
+
+  const lead = createLeadRecord(normalizedLead);
 
   try {
     await sendOwnerLeadNotification(lead);
