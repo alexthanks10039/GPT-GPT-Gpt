@@ -1,7 +1,7 @@
 # RAG Active 00 - Core Current
 
 Status: active source of truth
-Updated: 2026-05-20
+Updated: 2026-05-21
 Project: VoltEdge / Svet
 
 ## Purpose
@@ -48,12 +48,16 @@ Telegram/backend module:
 
 ## Current risk map
 
-High priority risks:
+High priority notes and risks:
 
-- Website form still prepares `leadPayload`, but the site-side `fetch` to backend is not connected yet.
+- Website form now posts `leadPayload` to the configured backend URL. Default local endpoint: `http://localhost:3000/api/leads`; backend must be running for successful submit.
 - `DEV_AUTH_BYPASS = true` is temporary and must be disabled before production.
 - Telegram object routes are planned, but not implemented yet.
 - Owner-only access guard exists, but must be connected to future object routes.
+
+Workspace note:
+
+- On 2026-05-21 `C:\Users\user\Documents\Electro` was behind GitHub `main`. The current working rule is: sync from `origin/main`, do fixes in a `codex/*` branch, keep `main` stable.
 
 ## RAG process rule
 

@@ -1,7 +1,7 @@
 # RAG Active 10 - Website and Calculator Current
 
 Status: active source of truth
-Updated: 2026-05-20
+Updated: 2026-05-21
 Scope: landing page, calculator, lead form, edit panel, room animation
 
 ## Website role
@@ -52,15 +52,15 @@ Important fields:
 - `leadSource`
 - `window.lastLeadPayload` for QA
 
-## Current website/backend gap
+## Website/backend bridge
 
 Current state:
 
 ```text
-lead form submit -> leadPayload is prepared locally -> no backend request yet
+lead form submit -> leadPayload is prepared -> POST /api/leads -> UI success/warning/error message
 ```
 
-Required next step:
+Default local request:
 
 ```js
 await fetch('http://localhost:3000/api/leads', {
@@ -70,7 +70,29 @@ await fetch('http://localhost:3000/api/leads', {
 });
 ```
 
-For production this URL should become a deployed backend endpoint.
+The endpoint is configurable through `siteSettings.integrations.leadApiUrl` and the edit panel `Lead API URL` field.
+
+Payload sent to backend includes:
+
+- `name`
+- `phone`
+- `service`
+- `objectType`
+- `address`
+- `calculatorData`
+- `calculatedPrice`
+- `source`
+- `sourcePage`
+
+Compatibility/QA fields remain in `window.lastLeadPayload` and hidden form inputs.
+
+Response handling:
+
+- `201`: lead sent and Telegram notification sent.
+- `202`: lead accepted, Telegram notification needs attention.
+- network/error/timeout: keep form values and show a real error, not a fake success.
+
+`sendLeadPayload()` uses a request timeout so the submit button cannot remain disabled forever when the local backend is not running or does not answer.
 
 ## Edit panel
 

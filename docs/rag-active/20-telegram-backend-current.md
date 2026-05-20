@@ -1,7 +1,7 @@
 # RAG Active 20 - Telegram and Backend Current
 
 Status: active source of truth
-Updated: 2026-05-20
+Updated: 2026-05-21
 Scope: Telegram bot, backend API, owner notifications, local backend testing
 
 ## Current priority
@@ -78,6 +78,18 @@ Accepted normalized fields:
 - `calculatedPrice`
 - `source`
 - `sourcePage`
+
+The website sends these fields from `script.js` via `sendLeadPayload()`. The default local frontend URL is:
+
+```text
+http://localhost:3000/api/leads
+```
+
+The frontend setting path is:
+
+```text
+siteSettings.integrations.leadApiUrl
+```
 
 Behavior:
 

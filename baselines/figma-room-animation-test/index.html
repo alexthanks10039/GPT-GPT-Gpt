@@ -8,14 +8,23 @@
     <link rel="stylesheet" href="../../styles.css?v=20260518-3" />
     <style>
       body {
+        box-sizing: border-box;
         min-height: 100vh;
         padding: 32px;
         background: #05080c;
+        overflow-x: hidden;
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: inherit;
       }
 
       .baseline-shell {
         width: min(960px, 100%);
         margin: 0 auto;
+        overflow: hidden;
       }
 
       .baseline-toolbar {
@@ -45,6 +54,8 @@
       }
 
       .baseline-stage {
+        width: 100%;
+        max-width: 100%;
         min-height: 620px;
       }
     </style>
