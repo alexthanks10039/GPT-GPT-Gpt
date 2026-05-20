@@ -23,7 +23,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=20260518-3" />
+    <link rel="stylesheet" href="styles.css?v=20260520-6" />
   </head>
   <body>
     <div class="noise" aria-hidden="true"></div>
@@ -41,7 +41,10 @@
         <a href="#faq">FAQ</a>
       </nav>
       <div class="header-actions">
-        <a class="phone" href="tel:+77001234567">+7 700 123 45 67</a>
+        <a class="phone" data-phone-link href="tel:+77001234567">+7 700 123 45 67</a>
+        <a class="whatsapp-link" data-whatsapp-link href="https://wa.me/77001234567" aria-label="Написать в WhatsApp" title="WhatsApp">
+          <i data-lucide="message-circle"></i>
+        </a>
         <a class="button button-small" href="#lead">Рассчитать смету</a>
       </div>
       <button class="menu-button" type="button" data-menu-button aria-label="Открыть меню">
@@ -66,7 +69,7 @@
               <a class="button button-ghost" href="#cases" data-animate="pulse" data-animate-trigger="hover">Посмотреть кейсы</a>
             </div>
           </div>
-          <div class="hero-panel reveal" data-animate="zoom" data-duration="900" data-delay="180">
+          <div class="hero-panel reveal" data-animate="slide-in" data-animate-trigger="load" data-duration="980" data-delay="260">
             <div class="panel-top">
               <span>Live estimate</span>
               <strong>от 8 500 ₸/м²</strong>
@@ -625,9 +628,9 @@
             <h2>Рассчитайте электрику до начала дорогой отделки</h2>
             <p>Оставьте заявку, и мы подскажем схему работ, ориентир по бюджету в тенге и сроки для вашего объекта в Алматы.</p>
             <div class="messengers">
-              <a href="tel:+77001234567"><i data-lucide="phone"></i> +7 700 123 45 67</a>
+              <a data-phone-link href="tel:+77001234567"><i data-lucide="phone"></i> +7 700 123 45 67</a>
               <a href="#"><i data-lucide="send"></i> Telegram</a>
-              <a href="#"><i data-lucide="message-circle"></i> WhatsApp</a>
+              <a data-whatsapp-link href="https://wa.me/77001234567"><i data-lucide="message-circle"></i> WhatsApp</a>
             </div>
           </div>
           <form class="lead-form reveal" data-lead-form data-animate="flip">
@@ -826,6 +829,7 @@
               <label class="editor-field">
                 Hero panel
                 <select data-setting="motion.heroPanel">
+                  <option>slide-in</option>
                   <option>zoom</option>
                   <option>fade-left</option>
                   <option>fade-up</option>
@@ -863,6 +867,77 @@
               </label>
             </div>
             <button class="editor-secondary" type="button" data-preview-motion>Проверить анимацию</button>
+            <div class="editor-block-section editor-room-animation-tools">
+              <h3>Комната калькулятора</h3>
+              <p class="editor-hint">Настройки меняют только UX-анимацию Figma room model. Координаты SVG-слоев остаются из coordinate map.</p>
+              <div class="editor-grid">
+                <label class="editor-field">
+                  Debug слоев
+                  <input data-setting="calculator.visual.animation.debugLayers" type="checkbox" />
+                </label>
+                <label class="editor-field">
+                  Transition, мс
+                  <input data-setting="calculator.visual.animation.transitionMs" type="number" min="80" max="1600" step="20" />
+                </label>
+                <label class="editor-field">
+                  Inactive opacity
+                  <input data-setting="calculator.visual.animation.inactiveOpacity" type="number" min="0" max="0.6" step="0.01" />
+                </label>
+                <label class="editor-field">
+                  Active opacity
+                  <input data-setting="calculator.visual.animation.activeOpacity" type="number" min="0.2" max="1" step="0.01" />
+                </label>
+                <label class="editor-field">
+                  Smart opacity base
+                  <input data-setting="calculator.visual.animation.smartBaseOpacity" type="number" min="0" max="1" step="0.01" />
+                </label>
+                <label class="editor-field">
+                  Smart opacity range
+                  <input data-setting="calculator.visual.animation.smartRangeOpacity" type="number" min="0" max="1" step="0.01" />
+                </label>
+                <label class="editor-field">
+                  Decor glow, px
+                  <input data-setting="calculator.visual.animation.decorGlowPx" type="number" min="0" max="80" step="1" />
+                </label>
+                <label class="editor-field">
+                  Smart lines, sec
+                  <input data-setting="calculator.visual.animation.smartLineSeconds" type="number" min="0.4" max="6" step="0.1" />
+                </label>
+                <label class="editor-field">
+                  Pulse, sec
+                  <input data-setting="calculator.visual.animation.pulseSeconds" type="number" min="0.4" max="8" step="0.1" />
+                </label>
+                <label class="editor-field">
+                  Security blink, sec
+                  <input data-setting="calculator.visual.animation.securityBlinkSeconds" type="number" min="0.4" max="8" step="0.1" />
+                </label>
+                <label class="editor-field">
+                  Energy low
+                  <input data-setting="calculator.visual.animation.thresholds.low" type="number" min="0" max="100" step="1" />
+                </label>
+                <label class="editor-field">
+                  Energy mid
+                  <input data-setting="calculator.visual.animation.thresholds.mid" type="number" min="0" max="100" step="1" />
+                </label>
+                <label class="editor-field">
+                  Energy high
+                  <input data-setting="calculator.visual.animation.thresholds.high" type="number" min="0" max="100" step="1" />
+                </label>
+                <label class="editor-field">
+                  Energy max
+                  <input data-setting="calculator.visual.animation.thresholds.max" type="number" min="0" max="100" step="1" />
+                </label>
+              </div>
+              <div class="editor-actions editor-room-presets" aria-label="Room animation preview presets">
+                <button class="editor-secondary" type="button" data-preview-room-state="base">Base</button>
+                <button class="editor-secondary" type="button" data-preview-room-state="smart">Smart</button>
+                <button class="editor-secondary" type="button" data-preview-room-state="decor">Decor</button>
+                <button class="editor-secondary" type="button" data-preview-room-state="security">Security</button>
+                <button class="editor-secondary" type="button" data-preview-room-state="commercial">Commercial</button>
+                <button class="editor-secondary" type="button" data-preview-room-state="premium">Premium</button>
+                <button class="editor-secondary" type="button" data-preview-room-rapid>Rapid test</button>
+              </div>
+            </div>
           </div>
 
           <div class="editor-tab-panel" data-editor-tab-panel="data" hidden>
@@ -919,6 +994,6 @@
     </footer>
 
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-    <script src="script.js?v=20260518-2"></script>
+    <script src="script.js?v=20260520-6"></script>
   </body>
 </html>

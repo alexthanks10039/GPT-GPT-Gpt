@@ -2,16 +2,23 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 
-from langchain_community.embeddings import HuggingFaceEmbeddings
-from langchain_community.vectorstores import Chroma
+from langchain_chroma import Chroma
+from langchain_huggingface import HuggingFaceEmbeddings
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_DB_DIR = Path(__file__).resolve().parent / "chroma_db"
 COLLECTION_NAME = "voltedge_project_knowledge"
 DEFAULT_EMBEDDING_MODEL = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+
+
+def configure_output_encoding() -> None:
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8")
 
 
 def parse_args() -> argparse.Namespace:
@@ -31,6 +38,7 @@ def format_result(index: int, document, score: float) -> str:
 
 
 def main() -> None:
+    configure_output_encoding()
     args = parse_args()
     db_dir = args.db_dir.resolve()
 

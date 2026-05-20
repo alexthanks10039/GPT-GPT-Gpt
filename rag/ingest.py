@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import argparse
 import shutil
+import sys
 from pathlib import Path
 
-from langchain_community.embeddings import HuggingFaceEmbeddings
-from langchain_community.vectorstores import Chroma
+from langchain_chroma import Chroma
 from langchain_core.documents import Document
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 
@@ -16,6 +17,12 @@ DEFAULT_DB_DIR = Path(__file__).resolve().parent / "chroma_db"
 COLLECTION_NAME = "voltedge_project_knowledge"
 SUPPORTED_EXTENSIONS = {".md", ".txt"}
 DEFAULT_EMBEDDING_MODEL = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+
+
+def configure_output_encoding() -> None:
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8")
 
 
 def parse_args() -> argparse.Namespace:
@@ -66,6 +73,7 @@ def reset_database(db_dir: Path) -> None:
 
 
 def main() -> None:
+    configure_output_encoding()
     args = parse_args()
     docs_dir = args.docs_dir.resolve()
     db_dir = args.db_dir.resolve()
@@ -91,9 +99,6 @@ def main() -> None:
         persist_directory=str(db_dir),
         collection_name=COLLECTION_NAME,
     )
-
-    if hasattr(vector_store, "persist"):
-        vector_store.persist()
 
     print(f"Indexed documents: {len(documents)}")
     print(f"Indexed chunks: {len(chunks)}")

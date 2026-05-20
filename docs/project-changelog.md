@@ -1,6 +1,6 @@
 # VoltEdge Project Changelog
 
-Дата обновления: 2026-05-17
+Дата обновления: 2026-05-20
 
 Этот документ является частью RAG-базы знаний проекта. Он фиксирует важные решения, правки интерфейса и архитектурные изменения, чтобы Codex/AI мог учитывать текущий контекст без повторного анализа всего кода.
 
@@ -24,6 +24,8 @@
 - Временный dev-вход без пароля включен через `DEV_AUTH_BYPASS`. Для production нужно вернуть `false`.
 - User flow панели: выбрать блок слева, редактировать поля справа, нажать `Сохранить изменения`.
 - Список блоков в редакторе больше не скрывается за блюром, область редактирования скроллится, кнопка сохранения доступна внизу панели.
+- Блюр у backdrop и самой панели убран полностью: `.editor-backdrop`, `.editor-login`, `.editor-panel` используют `backdrop-filter: none`.
+- Во вкладку `Анимации` добавлен инструментарий Figma room animation: debug toggle, opacity/transition/glow/speed settings, thresholds, preview presets и rapid test.
 
 ## Калькулятор
 
@@ -96,3 +98,18 @@ python ingest.py
 - Создана карта координат `docs/figma-room-layer-coordinates.md`.
 - Создан baseline/test harness `baselines/figma-room-animation-test/`.
 - Бизнес-логика калькулятора и submit формы не менялись.
+
+## Full audit and room animation QA 2026-05-20
+
+- Проведен аудит текущего контекста, HTML/CSS/JS, RAG-документов, калькулятора, формы, админ-панели и Figma room animation.
+- Исправлено: debug mode больше не показывает `.room-layer-label` постоянно и не форсит `opacity: 1` для `.room-security-dot`; подписи доступны только при hover/focus.
+- Исправлено: premium теперь подсвечивает chip `security`, потому что premium включает полный набор room effects.
+- Добавлено: `is-ev` получил CSS-состояние для EV charger без изменения бизнес-логики расчета.
+- Убрано: `console.info("Lead payload")`, чтобы данные заявки не выводились в консоль; `window.lastLeadPayload` оставлен для QA.
+- Обновлен cache-busting для `styles.css` и `script.js` до `20260520-1`.
+- Проверено через browser QA: smart grid, security dots, decor layers и EV-state выключаются после снятия опций и ухода с premium; после settle opacity возвращается к базовым значениям.
+- Проверено: форма создает `window.lastLeadPayload`, hidden fields заполнены, source остается `landing_calculator`.
+- Проверено: desktop/tablet/mobile ширины `1440`, `768`, `390` без horizontal overflow.
+- Проверено: baseline `baselines/figma-room-animation-test/` загружается, 18 изображений без broken assets.
+- RAG обновлен новым документом `docs/project-audit-2026-05-20.md`; локальный индекс ChromaDB пересобирается через `rag/ingest.py`.
+- RAG-скрипты переведены с deprecated imports на `langchain-chroma` и `langchain-huggingface`; `requirements.txt` обновлен.

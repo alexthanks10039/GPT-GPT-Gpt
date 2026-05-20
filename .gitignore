@@ -1,4 +1,5 @@
 verification-*.png
+.codex/
 .DS_Store
 Thumbs.db
 rag/chroma_db/

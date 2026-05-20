@@ -1,6 +1,6 @@
 # Figma room layer coordinates
 
-Date: 2026-05-18
+Date: 2026-05-20
 Source frame: `C:/Users/user/Downloads/Frame 369 (1).svg`
 Master viewBox: `0 0 2801 1796`
 
@@ -48,6 +48,7 @@ This replaces the earlier manual percentage positioning from the first separate 
 - `is-security`: enables security dots.
 - `is-commercial`: boosts main/ambient light without changing calculator logic.
 - `is-outdoor`: reuses decorative strips for perimeter/outdoor visual state.
+- `is-ev`: boosts the left/technical light group and floor reflection for EV charger.
 - `is-premium`: enables the strongest combined visual state.
 
 ## Debug mode
@@ -66,7 +67,7 @@ window.setRoomLayerDebug(true)
 window.setRoomLayerDebug(false)
 ```
 
-The debug mode adds dashed outlines to `.room-layer` and reveals `.room-layer-label` labels.
+The debug mode adds dashed outlines to `.room-layer`. It must not force hidden animation states to become visible. `.room-layer-label` labels are revealed only on hover/focus so the debug overlay does not look like a permanently enabled smart grid.
 
 ## Interaction notes
 
@@ -83,6 +84,9 @@ Fixes applied:
 - Added `data-energy-level`, `energy-low`, `energy-mid`, `energy-high`, and `energy-max` in `updateHouseVisual()`.
 - Added debug layer mode via URL and `window.setRoomLayerDebug()`.
 - Added `@keyframes securityBlink`.
+- Updated debug mode so it does not force `room-security-dot` visibility and does not keep labels visible permanently.
+- Added `is-ev` state for EV charger visual feedback.
+- Added admin-panel room animation controls for opacity, timing, glow, thresholds, presets, and rapid test.
 
 Manual Figma calibration still worth checking later:
 

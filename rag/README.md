@@ -7,6 +7,11 @@
 ```text
 docs/
   project-context.md
+  project-changelog.md
+  project-audit-2026-05-20.md
+  figma-svg-animation-plan.md
+  figma-room-animation.md
+  figma-room-layer-coordinates.md
 rag/
   ingest.py
   query.py
@@ -74,3 +79,5 @@ python ingest.py
 - баги и исправления
 - требования к калькулятору
 - промты и рабочие договоренности
+
+После крупных UI/UX-правок обязательно обновляй `docs/project-context.md`, `docs/project-changelog.md` или отдельный audit-документ, а затем пересобирай индекс. Последний полный аудит проекта зафиксирован в `docs/project-audit-2026-05-20.md`.

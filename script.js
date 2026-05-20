@@ -27,6 +27,10 @@ const motionPresets = {
     { opacity: 0, transform: "translate3d(32px, 0, 0)" },
     { opacity: 1, transform: "translate3d(0, 0, 0)" },
   ],
+  "slide-in": [
+    { opacity: 0, transform: "translate3d(48px, 24px, 0) scale(0.98)" },
+    { opacity: 1, transform: "translate3d(0, 0, 0) scale(1)" },
+  ],
   zoom: [
     { opacity: 0, transform: "scale(0.94)" },
     { opacity: 1, transform: "scale(1)" },
@@ -145,13 +149,22 @@ function setupAttributeAnimations() {
 
   viewItems.forEach((item) => revealObserver.observe(item));
 
-  document.querySelectorAll("[data-animate-trigger='load']").forEach((item) => {
-    runAnimation(item, item.dataset.animate || "fade-up", {
-      duration: toNumber(item.dataset.duration, 720),
-      delay: toNumber(item.dataset.delay, 0),
-      loop: item.dataset.loop === "true",
+  const runLoadAnimations = () => {
+    document.querySelectorAll("[data-animate-trigger='load']").forEach((item) => {
+      runAnimation(item, item.dataset.animate || "fade-up", {
+        duration: toNumber(item.dataset.duration, 720),
+        delay: toNumber(item.dataset.delay, 0),
+        loop: item.dataset.loop === "true",
+        easing: item.dataset.easing,
+      });
     });
-  });
+  };
+
+  if (document.readyState === "complete") {
+    requestAnimationFrame(runLoadAnimations);
+  } else {
+    window.addEventListener("load", () => requestAnimationFrame(runLoadAnimations), { once: true });
+  }
 
   document.querySelectorAll("[data-animate-trigger='hover']").forEach((item) => {
     item.addEventListener("mouseenter", () => {
@@ -183,6 +196,7 @@ const AUTH_KEY = "voltedge-editor-auth-v1";
 const DEFAULT_EDITOR_PASSWORD = "admin2026!";
 // Temporary dev switch: set to false before production to restore required editor password.
 const DEV_AUTH_BYPASS = true;
+const ROOM_DEBUG_FROM_URL = new URLSearchParams(window.location.search).has("debugRoomLayers") || new URLSearchParams(window.location.search).get("roomDebug") === "1";
 let editorSessionAuthenticated = false;
 
 const query = (selector) => document.querySelector(selector);
@@ -195,14 +209,13 @@ const setText = (selector, value) => {
 };
 
 function initRoomLayerDebugMode() {
-  const params = new URLSearchParams(window.location.search);
-  const shouldDebug = params.has("debugRoomLayers") || params.get("roomDebug") === "1";
-  document.body.classList.toggle("debug-room-layers", shouldDebug);
-
   window.setRoomLayerDebug = (enabled = !document.body.classList.contains("debug-room-layers")) => {
     document.body.classList.toggle("debug-room-layers", Boolean(enabled));
     return document.body.classList.contains("debug-room-layers");
   };
+
+  const shouldDebug = ROOM_DEBUG_FROM_URL || siteSettings?.calculator?.visual?.animation?.debugLayers === true;
+  window.setRoomLayerDebug(shouldDebug);
 }
 
 const getCssUrl = (name) =>
@@ -364,6 +377,26 @@ function getCalculatorPayload() {
   };
 }
 
+function getRoomAnimationSettings() {
+  return siteSettings?.calculator?.visual?.animation || defaultSettings?.calculator?.visual?.animation || {};
+}
+
+function syncCalculatorControls() {
+  queryAll("[data-field]").forEach((control) => {
+    const field = control.dataset.field;
+    if (!(field in calculatorState)) return;
+    if (control.type === "range") {
+      control.value = calculatorState[field];
+      return;
+    }
+    control.classList.toggle("is-selected", control.dataset.value === calculatorState[field]);
+  });
+
+  queryAll("[data-extra]").forEach((checkbox) => {
+    checkbox.checked = calculatorState.extras.includes(checkbox.value);
+  });
+}
+
 function updateChoiceSelection(field, value) {
   queryAll(`[data-field="${field}"]`).forEach((button) => {
     button.classList.toggle("is-selected", button.dataset.value === value);
@@ -396,15 +429,18 @@ function updateHouseVisual(payload) {
   setText("[data-energy-label]", payload.energyLevel);
 
   const has = (key) => calculatorState.extras.includes(key);
-  stage.classList.toggle("energy-low", payload.energyLevel >= 10);
-  stage.classList.toggle("energy-mid", payload.energyLevel >= 35);
-  stage.classList.toggle("energy-high", payload.energyLevel >= 65);
-  stage.classList.toggle("energy-max", payload.energyLevel >= 80);
+  const roomMotion = getRoomAnimationSettings();
+  const thresholds = roomMotion.thresholds || {};
+  stage.classList.toggle("energy-low", payload.energyLevel >= toNumber(thresholds.low, 10));
+  stage.classList.toggle("energy-mid", payload.energyLevel >= toNumber(thresholds.mid, 35));
+  stage.classList.toggle("energy-high", payload.energyLevel >= toNumber(thresholds.high, 65));
+  stage.classList.toggle("energy-max", payload.energyLevel >= toNumber(thresholds.max, 80));
   stage.classList.toggle("is-smart", has("smartHome"));
   stage.classList.toggle("is-decor", has("decorLight"));
   stage.classList.toggle("is-security", has("cctv"));
   stage.classList.toggle("is-commercial", has("commercialPower") || calculatorState.propertyType === "commercial");
   stage.classList.toggle("is-outdoor", has("outdoorLight"));
+  stage.classList.toggle("is-ev", has("evCharger"));
   stage.classList.toggle("is-premium", calculatorState.package === "premium");
 
   query("[data-visual-chip='base']")?.classList.toggle("is-active", payload.energyLevel > 20);
@@ -413,13 +449,14 @@ function updateHouseVisual(payload) {
     "is-active",
     has("decorLight") || has("outdoorLight") || calculatorState.package === "premium"
   );
-  query("[data-visual-chip='security']")?.classList.toggle("is-active", has("cctv"));
+  query("[data-visual-chip='security']")?.classList.toggle("is-active", has("cctv") || calculatorState.package === "premium");
 }
 
 function renderCalculator() {
   latestCalculatorPayload = getCalculatorPayload();
   const payload = latestCalculatorPayload;
   const price = query("[data-estimated-price]");
+  syncCalculatorControls();
 
   if (price) {
     price.textContent = payload.estimatedPriceFormatted;
@@ -752,6 +789,21 @@ const FIELD_LABELS = {
   labelText: "Название поля",
 };
 
+function getDefaultBlockSpacing(schema) {
+  if (schema.id === "hero") return { top: 112, bottom: 72 };
+  if (schema.id === "trust") return { top: 0, bottom: 0 };
+  if (schema.id === "lead") return { top: 110, bottom: 110 };
+  if (schema.id === "footer") return { top: 28, bottom: 28 };
+  return { top: 96, bottom: 96 };
+}
+
+function toSpacingPx(value, fallback) {
+  if (value === "" || value === null || value === undefined) return `${fallback}px`;
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return `${fallback}px`;
+  return `${Math.min(Math.max(parsed, 0), 260)}px`;
+}
+
 const calcLabel = (key) =>
   ({
     propertyType: "Типы объекта",
@@ -808,6 +860,8 @@ function getBlockDefaults(schema) {
     settings: {
       animation: schema.settings?.animation || "",
       animationTarget: schema.settings?.animationSelector || schema.root,
+      paddingTop: getDefaultBlockSpacing(schema).top,
+      paddingBottom: getDefaultBlockSpacing(schema).bottom,
     },
     isVisible: true,
     order: schema.order,
@@ -861,6 +915,24 @@ function getCalculatorDefaults() {
         decor: getText("[data-visual-chip='decor']"),
         security: getText("[data-visual-chip='security']"),
       },
+      animation: {
+        debugLayers: false,
+        transitionMs: 460,
+        inactiveOpacity: 0.08,
+        activeOpacity: 1,
+        smartBaseOpacity: 0.18,
+        smartRangeOpacity: 0.54,
+        decorGlowPx: 20,
+        smartLineSeconds: 1.8,
+        pulseSeconds: 2.4,
+        securityBlinkSeconds: 1.6,
+        thresholds: {
+          low: 10,
+          mid: 35,
+          high: 65,
+          max: 80,
+        },
+      },
     },
   };
 }
@@ -880,7 +952,7 @@ function getDefaultSettings() {
       brand: getText(".brand span:last-child") || "VoltEdge",
       phone: getText(".phone") || "+7 700 123 45 67",
       telegram: "#",
-      whatsapp: "#",
+      whatsapp: "https://wa.me/77001234567",
       heroEyebrow: getHeroEyebrow() || "Алматы и Алматинская область",
       heroTitle: getText(".hero-copy h1"),
       heroText: getText(".hero-copy p"),
@@ -904,7 +976,7 @@ function getDefaultSettings() {
       enabled: true,
       reveal: "fade-up",
       heroCopy: "fade-right",
-      heroPanel: "zoom",
+      heroPanel: "slide-in",
       duration: 720,
       parallax: 0.14,
     },
@@ -929,8 +1001,26 @@ function saveSettings(settings) {
   return writeStorage("localStorage", SETTINGS_KEY, JSON.stringify(settings));
 }
 
+function getPhoneDigits(phone) {
+  return String(phone || "").replace(/\D/g, "");
+}
+
 function normalizeTel(phone) {
-  return `tel:${String(phone).replace(/[^\d+]/g, "")}`;
+  const value = String(phone || "").replace(/[^\d+]/g, "");
+  return value ? `tel:${value}` : "#";
+}
+
+function normalizeWhatsApp(whatsapp, phone) {
+  const value = String(whatsapp || "").trim();
+  if (value && value !== "#") {
+    if (/^(https?:\/\/|whatsapp:\/\/)/i.test(value)) return value;
+
+    const valueDigits = getPhoneDigits(value);
+    if (valueDigits) return `https://wa.me/${valueDigits}`;
+  }
+
+  const phoneDigits = getPhoneDigits(phone);
+  return phoneDigits ? `https://wa.me/${phoneDigits}` : "#";
 }
 
 function setHeroEyebrow(value) {
@@ -974,6 +1064,25 @@ function setButtonIcon(button, iconName) {
   if (icon) icon.setAttribute("data-lucide", iconName);
 }
 
+function applyRoomAnimationSettings(animation = {}) {
+  const stage = query("[data-house-stage]");
+  if (!stage) return;
+
+  const setStageVar = (name, value) => stage.style.setProperty(name, value);
+  setStageVar("--room-transition", `${toNumber(animation.transitionMs, 460)}ms`);
+  setStageVar("--room-inactive-opacity", String(toNumber(animation.inactiveOpacity, 0.08)));
+  setStageVar("--room-active-opacity", String(toNumber(animation.activeOpacity, 1)));
+  setStageVar("--room-smart-opacity-base", String(toNumber(animation.smartBaseOpacity, 0.18)));
+  setStageVar("--room-smart-opacity-range", String(toNumber(animation.smartRangeOpacity, 0.54)));
+  setStageVar("--room-decor-glow", `${toNumber(animation.decorGlowPx, 20)}px`);
+  setStageVar("--room-smart-line-speed", `${toNumber(animation.smartLineSeconds, 1.8)}s`);
+  setStageVar("--room-pulse-speed", `${toNumber(animation.pulseSeconds, 2.4)}s`);
+  setStageVar("--room-security-speed", `${toNumber(animation.securityBlinkSeconds, 1.6)}s`);
+
+  const debugEnabled = ROOM_DEBUG_FROM_URL || animation.debugLayers === true;
+  document.body.classList.toggle("debug-room-layers", debugEnabled);
+}
+
 function applyCalculatorSettings(calculator = {}) {
   if (calculator.config) {
     replaceObject(CALC_CONFIG, deepMerge(CALC_CONFIG, calculator.config));
@@ -1014,6 +1123,7 @@ function applyCalculatorSettings(calculator = {}) {
   const chips = calculator.visual?.chips || {};
   Object.entries(chips).forEach(([key, value]) => setText(`[data-visual-chip="${key}"]`, value));
 
+  applyRoomAnimationSettings(calculator.visual?.animation || {});
   showCalcStep(currentCalcStep);
 }
 
@@ -1035,6 +1145,9 @@ function applyGenericBlock(schema, block) {
   root.hidden = block.isVisible === false;
   root.dataset.blockId = schema.id;
   root.style.order = Number(block.order) || schema.order;
+  const spacing = getDefaultBlockSpacing(schema);
+  root.style.setProperty("--block-padding-top", toSpacingPx(block.settings?.paddingTop, spacing.top));
+  root.style.setProperty("--block-padding-bottom", toSpacingPx(block.settings?.paddingBottom, spacing.bottom));
 
   if (schema.selectors?.title) setText(schema.selectors.title, block.title);
   if (schema.selectors?.subtitle) {
@@ -1103,11 +1216,11 @@ function applySiteSettings(settings) {
     formNote.textContent = content.formNote;
   }
 
-  queryAll(".phone, .messengers a:first-child").forEach((link) => {
+  queryAll("[data-phone-link], .phone, .messengers a:first-child").forEach((link) => {
     link.href = normalizeTel(content.phone);
   });
   setLink(".messengers a:nth-child(2)", content.telegram);
-  setLink(".messengers a:nth-child(3)", content.whatsapp);
+  setLink("[data-whatsapp-link], .messengers a:nth-child(3)", normalizeWhatsApp(content.whatsapp, content.phone));
 
   applySeoSettings(seo);
 
@@ -1310,6 +1423,8 @@ function initEditorPanel() {
       fieldControl({ label: "Заголовок", path: `blocks.${schema.id}.title`, value: block.title, wide: true, rows: true, required: true }),
       fieldControl({ label: "Подзаголовок", path: `blocks.${schema.id}.subtitle`, value: block.subtitle, wide: true }),
       fieldControl({ label: "Описание", path: `blocks.${schema.id}.description`, value: block.description, wide: true, rows: true }),
+      fieldControl({ label: "Отступ сверху, px", path: `blocks.${schema.id}.settings.paddingTop`, value: block.settings.paddingTop, type: "number" }),
+      fieldControl({ label: "Отступ снизу, px", path: `blocks.${schema.id}.settings.paddingBottom`, value: block.settings.paddingBottom, type: "number" }),
       fieldControl({ label: "Анимация блока", path: `blocks.${schema.id}.settings.animation`, value: block.settings.animation })
     );
 
@@ -1359,6 +1474,37 @@ function initEditorPanel() {
       renderBlockForm(selectedBlockId);
       fillEditor();
     }
+  };
+
+  const roomPreviewStates = {
+    base: { propertyType: "apartment", area: 85, rooms: 3, package: "base", extras: [] },
+    smart: { propertyType: "apartment", area: 120, rooms: 4, package: "standard", extras: ["smartHome"] },
+    decor: { propertyType: "house", area: 180, rooms: 5, package: "standard", extras: ["decorLight", "outdoorLight"] },
+    security: { propertyType: "apartment", area: 95, rooms: 3, package: "standard", extras: ["cctv"] },
+    commercial: { propertyType: "commercial", area: 240, rooms: 8, package: "standard", extras: ["commercialPower"] },
+    premium: {
+      propertyType: "commercial",
+      area: 420,
+      rooms: 14,
+      package: "premium",
+      extras: ["smartHome", "decorLight", "cctv", "commercialPower", "outdoorLight", "evCharger"],
+    },
+  };
+
+  const previewRoomState = (name) => {
+    const preset = roomPreviewStates[name] || roomPreviewStates.base;
+    const previewSettings = readEditor();
+    applyRoomAnimationSettings(previewSettings.calculator?.visual?.animation || {});
+    calculatorState = {
+      ...calculatorState,
+      ...clone(preset),
+      renovationType: calculatorState.renovationType,
+      timeline: calculatorState.timeline,
+      extras: [...preset.extras],
+    };
+    renderCalculator();
+    runAnimation("[data-house-model]", "glow", { duration: 520 });
+    setStatus(`Room preview: ${name}`);
   };
 
   trigger?.addEventListener("click", openEditor);
@@ -1471,6 +1617,17 @@ function initEditorPanel() {
     setStatus(`Проверка анимации: ${animation}`);
   });
 
+  queryAll("[data-preview-room-state]").forEach((button) => {
+    button.addEventListener("click", () => previewRoomState(button.dataset.previewRoomState));
+  });
+
+  query("[data-preview-room-rapid]")?.addEventListener("click", () => {
+    ["base", "smart", "decor", "security", "commercial", "premium", "base"].forEach((name, index) => {
+      window.setTimeout(() => previewRoomState(name), index * 360);
+    });
+    setStatus("Room rapid test запущен.");
+  });
+
   document.addEventListener("keydown", (event) => {
     if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "e") {
       event.preventDefault();
@@ -1545,7 +1702,6 @@ leadForm?.addEventListener("submit", (event) => {
   formData.set("calculatorBreakdown", JSON.stringify(calculator.breakdown));
   formData.set("calculatedAt", calculator.calculatedAt);
   window.lastLeadPayload = leadPayload;
-  console.info("Lead payload", leadPayload);
 
   if (formNote) {
     formNote.textContent = `Заявка подготовлена. К ней прикреплен расчет: ${calculator.estimatedPriceFormatted}.`;
