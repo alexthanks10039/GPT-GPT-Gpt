@@ -37,6 +37,15 @@ const sendMainMenu = async (chatId) => {
   });
 };
 
+const sendReload = async (chatId) => {
+  await sendMessage({
+    chatId,
+    text: 'Бот обновлён. Главное меню и клавиатура перезапущены.',
+    replyMarkup: persistentNavigationKeyboard(),
+  });
+  await sendMainMenu(chatId);
+};
+
 const safeEditOrSend = async ({ chatId, messageId, text, replyMarkup }) => {
   if (messageId) {
     try {
@@ -225,6 +234,11 @@ const handleLeadCallback = async ({ data, chatId, messageId, username }) => {
 
 const handleTextMessage = async ({ chatId, text }) => {
   const normalized = String(text || '').trim().toLowerCase();
+
+  if (normalized === '/reload' || normalized === 'reload' || normalized === 'перезапуск') {
+    await sendReload(chatId);
+    return;
+  }
 
   if (normalized === '/start' || normalized === 'главное меню') {
     await sendMainMenu(chatId);
