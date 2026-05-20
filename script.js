@@ -1672,7 +1672,27 @@ document.querySelectorAll(".nav a").forEach((link) => {
 
 setupAttributeAnimations();
 
-leadForm?.addEventListener("submit", (event) => {
+const DEFAULT_LEAD_ENDPOINT = "http://localhost:3000/api/leads";
+
+function getLeadEndpoint() {
+  const params = new URLSearchParams(window.location.search);
+  return (
+    leadForm?.dataset.leadsEndpoint ||
+    window.VOLTEDGE_LEADS_ENDPOINT ||
+    params.get("leadsEndpoint") ||
+    DEFAULT_LEAD_ENDPOINT
+  );
+}
+
+function setLeadSubmitState(isSubmitting) {
+  const submitButton = leadForm?.querySelector("button[type='submit']");
+  if (!submitButton) return;
+  submitButton.disabled = isSubmitting;
+  submitButton.dataset.originalText = submitButton.dataset.originalText || submitButton.textContent.trim();
+  submitButton.textContent = isSubmitting ? "Отправляем..." : submitButton.dataset.originalText;
+}
+
+leadForm?.addEventListener("submit", async (event) => {
   event.preventDefault();
   leadForm.dataset.submitted = "true";
   renderCalculator();
@@ -1680,10 +1700,13 @@ leadForm?.addEventListener("submit", (event) => {
   const formData = new FormData(leadForm);
   const calculator = latestCalculatorPayload || getCalculatorPayload();
   const leadPayload = {
-    name: formData.get("name"),
+    name: formData.get("name") || "Без имени",
     phone: formData.get("phone"),
+    service: formData.get("object") || calculator.propertyType || "Не указано",
+    message: `Тип объекта: ${formData.get("object") || "Не указано"}. Площадь из формы: ${formData.get("area") || "Не указана"}. Предварительная смета: ${calculator.estimatedPriceFormatted}.`,
     contactObjectType: formData.get("object"),
     contactArea: formData.get("area"),
+    area: formData.get("area") || calculator.area,
     calculator,
     calculatorArea: calculator.area,
     calculatorOptions: calculator.services,
@@ -1703,10 +1726,44 @@ leadForm?.addEventListener("submit", (event) => {
   formData.set("calculatedAt", calculator.calculatedAt);
   window.lastLeadPayload = leadPayload;
 
-  if (formNote) {
-    formNote.textContent = `Заявка подготовлена. К ней прикреплен расчет: ${calculator.estimatedPriceFormatted}.`;
+  if (!leadPayload.phone) {
+    if (formNote) formNote.textContent = "Укажите телефон, чтобы отправить заявку.";
+    return;
   }
-  runAnimation(leadForm, "glow", { duration: 900 });
-  leadForm.reset();
-  updateCalculatorPayloadInputs(calculator);
+
+  const endpoint = getLeadEndpoint();
+
+  try {
+    setLeadSubmitState(true);
+    if (formNote) {
+      formNote.textContent = "Отправляем заявку в Telegram...";
+    }
+
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(leadPayload),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text().catch(() => "");
+      throw new Error(`Lead endpoint responded with ${response.status}. ${errorText}`.trim());
+    }
+
+    if (formNote) {
+      formNote.textContent = `Заявка отправлена. К ней прикреплен расчет: ${calculator.estimatedPriceFormatted}.`;
+    }
+    runAnimation(leadForm, "glow", { duration: 900 });
+    leadForm.reset();
+    updateCalculatorPayloadInputs(calculator);
+  } catch (error) {
+    console.error("[lead-form] failed to send lead", error);
+    if (formNote) {
+      formNote.textContent = "Не удалось отправить заявку. Проверьте, что backend запущен на http://localhost:3000 и доступен endpoint /api/leads.";
+    }
+  } finally {
+    setLeadSubmitState(false);
+  }
 });
