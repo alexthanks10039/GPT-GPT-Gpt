@@ -2,6 +2,7 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import { leadsRouter } from './leads.routes.js';
+import { botRouter } from './bot.routes.js';
 
 const app = express();
 const port = Number(process.env.PORT || 3000);
@@ -17,6 +18,7 @@ app.get('/health', (_req, res) => {
 });
 
 app.use(leadsRouter);
+app.use(botRouter);
 
 app.use((req, res) => {
   res.status(404).json({
