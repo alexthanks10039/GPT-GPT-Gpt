@@ -19,17 +19,28 @@ const formatPrice = (value) => {
   return `${number.toLocaleString('ru-RU')} ₸`;
 };
 
+const normalizeOptions = (calculatorData) => {
+  if (!calculatorData || typeof calculatorData !== 'object') return [];
+
+  if (Array.isArray(calculatorData.options)) return calculatorData.options;
+  if (Array.isArray(calculatorData.services)) return calculatorData.services;
+
+  return [];
+};
+
 const formatCalculatorData = (calculatorData) => {
   if (!calculatorData || typeof calculatorData !== 'object') return [];
 
   const lines = [];
+  const area = calculatorData.area || calculatorData.calculatorArea;
+  const options = normalizeOptions(calculatorData);
 
-  if (calculatorData.area) {
-    lines.push(`📐 Площадь: ${calculatorData.area} м²`);
+  if (area) {
+    lines.push(`📐 Площадь: ${area} м²`);
   }
 
-  if (Array.isArray(calculatorData.options) && calculatorData.options.length > 0) {
-    lines.push(`💡 Опции: ${calculatorData.options.join(', ')}`);
+  if (options.length > 0) {
+    lines.push(`💡 Опции: ${options.join(', ')}`);
   }
 
   return lines;
@@ -85,7 +96,7 @@ export const sendOwnerLeadNotification = async (lead) => {
           [
             {
               text: '📞 Позвонить',
-              url: `tel:${lead.phone}`,
+              callback_data: `lead:call:${lead.id || 'new'}`,
             },
             {
               text: '🛠 Взять в работу',
