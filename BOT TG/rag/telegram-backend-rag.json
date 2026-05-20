@@ -1,0 +1,217 @@
+{
+  "rag_name": "telegram_backend_context",
+  "project": "VoltEdge / Svet",
+  "created_at": "2026-05-20",
+  "language": "ru",
+  "scope": "Отдельный RAG массив для Telegram Mini App, backend API, уведомлений владельца и локального тестирования.",
+  "current_access_mode": "owner-only",
+  "baseline_commit": "aa604dd3bd8082ff3a2c22ced7da2c75c8a443a2",
+  "head_commit_at_scan": "a6ea36ecc3c23292d8fc6e5a191cfe5e31ffd008",
+  "change_summary": {
+    "commits_scanned": 20,
+    "files_added_or_changed": 17,
+    "main_folder": "BOT TG",
+    "main_result": "Добавлен изолированный Telegram Mini App модуль, Node.js backend для заявок, Telegram owner notifications, локальный env example и временный owner-only access guard."
+  },
+  "source_files": [
+    "BOT TG/README.md",
+    "BOT TG/API_CONTRACT.md",
+    "BOT TG/INTEGRATION_ANALYSIS.md",
+    "BOT TG/backend/README.md",
+    "BOT TG/backend/.env.example",
+    "BOT TG/backend/package.json",
+    "BOT TG/backend/src/index.js",
+    "BOT TG/backend/src/leads.routes.js",
+    "BOT TG/backend/src/telegram.service.js",
+    "BOT TG/backend/src/test-send.js",
+    "BOT TG/backend/src/owner-access.js",
+    "BOT TG/lib/main.dart",
+    "BOT TG/lib/models/work_object.dart",
+    "BOT TG/lib/services/api_service.dart",
+    "BOT TG/lib/services/mock_object_service.dart",
+    "BOT TG/pubspec.yaml",
+    "BOT TG/web/index.html"
+  ],
+  "rag_chunks": [
+    {
+      "id": "tg_backend_001_architecture",
+      "title": "Общая архитектура Telegram + backend",
+      "type": "architecture",
+      "priority": "high",
+      "content": "Сайт VoltEdge собирает заявку и данные калькулятора. Backend принимает заявку через POST /api/leads. Backend отправляет уведомление владельцу в Telegram. Telegram Mini App живёт отдельно в папке BOT TG и предназначен для объектов, сотрудников, статусов, комментариев и фотоотчётов.",
+      "tags": ["architecture", "telegram", "backend", "website", "mini-app"],
+      "source_files": ["BOT TG/README.md", "BOT TG/API_CONTRACT.md"]
+    },
+    {
+      "id": "tg_backend_002_mvp_priority",
+      "title": "Приоритет MVP-1",
+      "type": "product_decision",
+      "priority": "high",
+      "content": "Первостепенная задача - уведомление владельца при получении заявки с сайта. Сложная CRM, роли, полноценный контроль сотрудников и фотоотчёты относятся к следующим этапам. Сейчас важнее связка сайт -> backend -> Telegram owner notification.",
+      "tags": ["mvp", "owner-notification", "priority"],
+      "source_files": ["BOT TG/README.md", "BOT TG/backend/README.md"]
+    },
+    {
+      "id": "tg_backend_003_backend_stack",
+      "title": "Backend стек",
+      "type": "technical_stack",
+      "priority": "high",
+      "content": "Backend реализован на Node.js + Express. Используются ES modules, dotenv для ENV, cors для локального взаимодействия сайта и backend. Скрипты: npm run dev, npm start, npm run test:telegram.",
+      "tags": ["nodejs", "express", "dotenv", "cors", "scripts"],
+      "source_files": ["BOT TG/backend/package.json", "BOT TG/backend/src/index.js"]
+    },
+    {
+      "id": "tg_backend_004_health_endpoint",
+      "title": "Health endpoint",
+      "type": "api",
+      "priority": "medium",
+      "content": "Backend имеет GET /health. Он возвращает ok: true и service: bot-tg-backend. Используется для быстрой проверки локального запуска backend на localhost.",
+      "tags": ["api", "health", "local-testing"],
+      "source_files": ["BOT TG/backend/src/index.js"]
+    },
+    {
+      "id": "tg_backend_005_leads_endpoint",
+      "title": "POST /api/leads",
+      "type": "api",
+      "priority": "high",
+      "content": "Endpoint POST /api/leads принимает заявку с сайта. Обязательные поля: name и phone. Данные нормализуются в lead object: id, name, phone, service, objectType, address, comment, calculatorData, calculatedPrice, source, sourcePage, createdAt, status. После нормализации backend отправляет Telegram уведомление владельцу.",
+      "tags": ["api", "leads", "telegram-notification", "form"],
+      "source_files": ["BOT TG/backend/src/leads.routes.js"]
+    },
+    {
+      "id": "tg_backend_006_lead_failure_behavior",
+      "title": "Поведение при ошибке Telegram",
+      "type": "api_behavior",
+      "priority": "high",
+      "content": "Если заявка валидная, но Telegram отправка не удалась, backend возвращает 202: success true, telegram failed, warning Lead accepted, but Telegram notification failed. Это значит, что заявка принята, но уведомление не доставлено. В будущем нужно добавить хранение заявки в БД.",
+      "tags": ["error-handling", "telegram", "leads", "future-db"],
+      "source_files": ["BOT TG/backend/src/leads.routes.js"]
+    },
+    {
+      "id": "tg_backend_007_telegram_config",
+      "title": "Telegram ENV конфигурация",
+      "type": "config",
+      "priority": "high",
+      "content": "Для Telegram backend нужны ENV переменные TG_KEY и OWNER_ID. TG_KEY - токен бота. OWNER_ID - Telegram chat id владельца. PORT по умолчанию 3000. Добавлен .env.example для локального запуска.",
+      "tags": ["env", "telegram", "owner", "local-testing"],
+      "source_files": ["BOT TG/backend/.env.example", "BOT TG/backend/src/telegram.service.js"]
+    },
+    {
+      "id": "tg_backend_008_telegram_message_format",
+      "title": "Формат Telegram уведомления",
+      "type": "notification_format",
+      "priority": "high",
+      "content": "Сообщение владельцу содержит: новую заявку с сайта, имя, телефон, объект, адрес, услугу, данные калькулятора, расчёт стоимости, комментарий, источник, страницу и время. Калькулятор поддерживает area, options или services, calculatedPrice форматируется в тенге.",
+      "tags": ["telegram", "message", "calculator", "lead"],
+      "source_files": ["BOT TG/backend/src/telegram.service.js", "BOT TG/API_CONTRACT.md"]
+    },
+    {
+      "id": "tg_backend_009_telegram_buttons",
+      "title": "Inline buttons в Telegram",
+      "type": "notification_ui",
+      "priority": "medium",
+      "content": "Telegram уведомление содержит inline keyboard с кнопками Позвонить и Взять в работу. Сейчас кнопки имеют callback_data lead:call:<leadId> и lead:take:<leadId>. Обработчик callback пока не реализован.",
+      "tags": ["telegram", "inline-keyboard", "callback", "todo"],
+      "source_files": ["BOT TG/backend/src/telegram.service.js"]
+    },
+    {
+      "id": "tg_backend_010_test_send",
+      "title": "Тестовая отправка Telegram",
+      "type": "local_testing",
+      "priority": "high",
+      "content": "Добавлен скрипт src/test-send.js. Он создаёт тестовую заявку и вызывает sendOwnerLeadNotification. Запуск через npm run test:telegram. Используется для проверки TG_KEY и OWNER_ID без подключения сайта.",
+      "tags": ["testing", "telegram", "smoke-test", "local"],
+      "source_files": ["BOT TG/backend/src/test-send.js", "BOT TG/backend/package.json"]
+    },
+    {
+      "id": "tg_backend_011_local_backend_flow",
+      "title": "Локальный flow тестирования",
+      "type": "local_testing",
+      "priority": "high",
+      "content": "Локально backend запускается из BOT TG/backend. Команды: npm install, npm run dev. Проверка: GET http://localhost:3000/health. После этого можно отправлять POST http://localhost:3000/api/leads. Для текущей задачи webhook не нужен, backend сам отправляет сообщение через Telegram Bot API.",
+      "tags": ["localhost", "local-testing", "backend", "telegram"],
+      "source_files": ["BOT TG/backend/README.md", "BOT TG/backend/package.json"]
+    },
+    {
+      "id": "tg_backend_012_owner_only_access",
+      "title": "Временный owner-only режим",
+      "type": "access_control",
+      "priority": "high",
+      "content": "Проверка пользователей по ролям временно отключена. Текущий режим доступа - owner-only. Валидный пользователь только владелец через OWNER_ID. Добавлен guard owner-access.js с ACCESS_MODE owner-only, requireOwnerAccess, isOwnerTelegramUser и чтением telegramUserId из query, body или header x-telegram-user-id.",
+      "tags": ["access", "owner-only", "rbac-disabled", "security", "temporary"],
+      "source_files": ["BOT TG/backend/src/owner-access.js"]
+    },
+    {
+      "id": "tg_backend_013_owner_guard_status",
+      "title": "Статус подключения owner guard",
+      "type": "implementation_status",
+      "priority": "high",
+      "content": "Owner-only guard подготовлен, но ещё не подключён к routes объектов, потому что /api/objects routes пока не реализованы. Для будущих объектов нужно подключить requireOwnerAccess к GET /api/objects, GET /api/objects/:id, PATCH /api/objects/:id/status и POST /api/objects/:id/reports.",
+      "tags": ["owner-only", "routes", "todo", "objects"],
+      "source_files": ["BOT TG/backend/src/owner-access.js", "BOT TG/API_CONTRACT.md"]
+    },
+    {
+      "id": "tg_backend_014_website_gap",
+      "title": "Текущий разрыв сайта и backend",
+      "type": "risk",
+      "priority": "critical",
+      "content": "Сайт уже формирует leadPayload и calculator payload, но пока не отправляет данные на backend через fetch. В script.js форма подготавливает заявку, записывает window.lastLeadPayload, обновляет formNote и сбрасывает форму. Нужно добавить POST на backend endpoint /api/leads.",
+      "tags": ["risk", "website", "backend", "fetch", "integration-gap"],
+      "source_files": ["script.js", "BOT TG/API_CONTRACT.md"]
+    },
+    {
+      "id": "tg_backend_015_mini_app_flutter",
+      "title": "Telegram Mini App Flutter skeleton",
+      "type": "frontend_mini_app",
+      "priority": "medium",
+      "content": "Добавлен Flutter Mini App skeleton. Главный экран показывает список объектов. Карточка объекта открывает детали: клиент, телефон, адрес, описание работ, таймлайн, кнопки отправить фотоотчёт, добавить комментарий и завершить объект. Пока используется mock data.",
+      "tags": ["flutter", "telegram-mini-app", "objects", "mock"],
+      "source_files": ["BOT TG/lib/main.dart", "BOT TG/lib/services/mock_object_service.dart"]
+    },
+    {
+      "id": "tg_backend_016_work_object_model",
+      "title": "Модель объекта работ",
+      "type": "data_model",
+      "priority": "medium",
+      "content": "Модель WorkObject содержит id, title, address, clientName, phone, description, deadline, status, assignee, price, timeline. Статусы описаны enum WorkObjectStatus и используются в UI Mini App.",
+      "tags": ["data-model", "object", "flutter", "status"],
+      "source_files": ["BOT TG/lib/models/work_object.dart"]
+    },
+    {
+      "id": "tg_backend_017_api_service_placeholder",
+      "title": "ApiService для Mini App",
+      "type": "frontend_api_client",
+      "priority": "medium",
+      "content": "ApiService уже содержит методы fetchObjects и updateObjectStatus. Он ходит в baseUrl, передаёт telegramUserId и status. В текущем активном коде роль не передаётся. Это соответствует временному owner-only подходу.",
+      "tags": ["flutter", "api-client", "telegramUserId", "owner-only"],
+      "source_files": ["BOT TG/lib/services/api_service.dart"]
+    },
+    {
+      "id": "tg_backend_018_objects_api_plan",
+      "title": "План API объектов",
+      "type": "api_plan",
+      "priority": "medium",
+      "content": "Запланированы endpoints: GET /api/objects, GET /api/objects/:id, PATCH /api/objects/:id/status, POST /api/objects/:id/reports. На MVP фото можно отправлять через Telegram и хранить metadata. Реальные routes объектов ещё не реализованы.",
+      "tags": ["api-plan", "objects", "reports", "status"],
+      "source_files": ["BOT TG/API_CONTRACT.md", "BOT TG/lib/services/api_service.dart"]
+    },
+    {
+      "id": "tg_backend_019_deploy_direction",
+      "title": "Направление деплоя",
+      "type": "deployment",
+      "priority": "medium",
+      "content": "Для боевой работы нужен backend-хостинг или VPS, где Express будет постоянно запущен. Для локального тестирования хостинг не нужен: сайт и backend могут работать на localhost, а backend отправляет сообщения в Telegram через API.",
+      "tags": ["deploy", "hosting", "vps", "localhost"],
+      "source_files": ["BOT TG/README.md", "BOT TG/backend/README.md"]
+    },
+    {
+      "id": "tg_backend_020_next_steps",
+      "title": "Следующие технические шаги",
+      "type": "next_steps",
+      "priority": "high",
+      "content": "Следующие шаги: 1) добавить fetch из script.js на локальный backend; 2) реализовать /api/objects routes; 3) подключить requireOwnerAccess к routes объектов; 4) добавить простое хранилище заявок или объектов; 5) обработать Telegram callback buttons; 6) позже вернуть RBAC, если появятся сотрудники и роли.",
+      "tags": ["next-steps", "integration", "objects", "rbac", "callbacks"],
+      "source_files": ["script.js", "BOT TG/backend/src/owner-access.js", "BOT TG/backend/src/telegram.service.js", "BOT TG/API_CONTRACT.md"]
+    }
+  ]
+}
