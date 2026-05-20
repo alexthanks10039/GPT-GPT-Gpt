@@ -12,7 +12,7 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_DOCS_DIR = PROJECT_ROOT / "docs"
+DEFAULT_DOCS_DIR = PROJECT_ROOT / "docs" / "rag-active"
 DEFAULT_DB_DIR = Path(__file__).resolve().parent / "chroma_db"
 COLLECTION_NAME = "voltedge_project_knowledge"
 SUPPORTED_EXTENSIONS = {".md", ".txt"}
@@ -27,7 +27,7 @@ def configure_output_encoding() -> None:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Index local project docs into ChromaDB.")
-    parser.add_argument("--docs-dir", type=Path, default=DEFAULT_DOCS_DIR, help="Folder with .md/.txt documents.")
+    parser.add_argument("--docs-dir", type=Path, default=DEFAULT_DOCS_DIR, help="Folder with .md/.txt documents. Defaults to docs/rag-active for clean retrieval.")
     parser.add_argument("--db-dir", type=Path, default=DEFAULT_DB_DIR, help="Local ChromaDB persistence folder.")
     parser.add_argument("--chunk-size", type=int, default=900, help="Chunk size in characters.")
     parser.add_argument("--chunk-overlap", type=int, default=160, help="Chunk overlap in characters.")
@@ -55,6 +55,7 @@ def read_documents(docs_dir: Path) -> list[Document]:
                 metadata={
                     "source": str(path.relative_to(PROJECT_ROOT)),
                     "filename": path.name,
+                    "rag_layer": "active" if "rag-active" in path.parts else "custom",
                 },
             )
         )
@@ -93,13 +94,14 @@ def main() -> None:
         reset_database(db_dir)
 
     embeddings = HuggingFaceEmbeddings(model_name=args.model)
-    vector_store = Chroma.from_documents(
+    Chroma.from_documents(
         documents=chunks,
         embedding=embeddings,
         persist_directory=str(db_dir),
         collection_name=COLLECTION_NAME,
     )
 
+    print(f"Docs source: {docs_dir}")
     print(f"Indexed documents: {len(documents)}")
     print(f"Indexed chunks: {len(chunks)}")
     print(f"Vector DB: {db_dir}")
