@@ -1,0 +1,160 @@
+[
+  {
+    "id": "project.identity",
+    "type": "project_context",
+    "title": "VoltEdge landing and Telegram lead server",
+    "status": "active",
+    "summary": "Static landing page for electrical installation services in Almaty with calculator, lead form, and a Node.js server that accepts leads and sends them to Telegram.",
+    "repository": "alexthanks10039/GPT-GPT-Gpt",
+    "main_frontend_files": ["index.html", "styles.css", "script.js"],
+    "main_server_files": ["server/package.json", "server/.env.example", "server/src/index.js"]
+  },
+  {
+    "id": "frontend.lead_form.integration",
+    "type": "frontend_behavior",
+    "title": "Lead form sends calculator data to backend",
+    "status": "implemented",
+    "source_file": "script.js",
+    "endpoint_default": "http://localhost:3000/api/leads",
+    "endpoint_override_options": ["data-leads-endpoint on form", "window.VOLTEDGE_LEADS_ENDPOINT", "?leadsEndpoint=... query param"],
+    "payload_fields": [
+      "name",
+      "phone",
+      "service",
+      "message",
+      "contactObjectType",
+      "contactArea",
+      "area",
+      "calculator",
+      "calculatorArea",
+      "calculatorOptions",
+      "calculatorBreakdown",
+      "estimatedPrice",
+      "estimatedPriceFormatted",
+      "calculatedAt",
+      "timestamp",
+      "source"
+    ],
+    "success_user_message": "Заявка отправлена. К ней прикреплен расчет: <estimatedPriceFormatted>.",
+    "error_user_message": "Не удалось отправить заявку. Проверьте, что backend запущен на http://localhost:3000 и доступен endpoint /api/leads."
+  },
+  {
+    "id": "calculator.payload",
+    "type": "data_contract",
+    "title": "Calculator data contract",
+    "status": "implemented",
+    "source_file": "script.js",
+    "fields": [
+      "propertyType",
+      "propertyTypeCode",
+      "area",
+      "rooms",
+      "renovationType",
+      "package",
+      "services",
+      "timeline",
+      "estimatedPrice",
+      "estimatedPriceFormatted",
+      "breakdown",
+      "energyLevel",
+      "calculatedAt",
+      "source",
+      "state"
+    ],
+    "notes": "This payload is attached to the form automatically before submit and is sent to the server inside the lead payload."
+  },
+  {
+    "id": "server.leads_api",
+    "type": "backend_behavior",
+    "title": "Lead API and Telegram delivery",
+    "status": "implemented",
+    "source_file": "server/src/index.js",
+    "runtime": "Node.js >=20, Express",
+    "endpoints": [
+      { "method": "GET", "path": "/health", "purpose": "backend health check and Telegram env readiness" },
+      { "method": "GET", "path": "/api/stats", "purpose": "in-memory lead counters" },
+      { "method": "POST", "path": "/api/leads", "purpose": "accept site leads and send Telegram message to owner" }
+    ],
+    "required_env": ["TG_KEY", "OWNER_ID"],
+    "optional_env": ["PORT", "MINI_APP_URL", "ALLOWED_ORIGINS", "BOT_TOKEN", "OWNER_CHAT_ID"],
+    "telegram_message_contains": ["lead id", "status", "name", "phone", "service/object", "area", "comment", "calculator data", "source", "Almaty time"],
+    "telegram_buttons": ["Взять в работу", "Передать", "WhatsApp", "Позвонить", "Статистика", "Главное меню", "Mini App if MINI_APP_URL exists"]
+  },
+  {
+    "id": "server.cors",
+    "type": "backend_config",
+    "title": "Local CORS configuration",
+    "status": "implemented",
+    "source_file": "server/src/index.js",
+    "default_allowed_origins": [
+      "http://127.0.0.1:4173",
+      "http://localhost:4173",
+      "http://127.0.0.1:5500",
+      "http://localhost:5500"
+    ],
+    "env_override": "ALLOWED_ORIGINS comma-separated list"
+  },
+  {
+    "id": "env.contract",
+    "type": "environment_contract",
+    "title": "Server environment variables",
+    "status": "implemented",
+    "source_file": "server/.env.example",
+    "variables": {
+      "PORT": "3000",
+      "TG_KEY": "Telegram bot token placeholder, never commit real token",
+      "OWNER_ID": "Telegram owner chat id placeholder",
+      "MINI_APP_URL": "Optional public Mini App URL",
+      "ALLOWED_ORIGINS": "Allowed frontend origins for CORS"
+    },
+    "security_note": "Real .env is ignored by git and must not be committed."
+  },
+  {
+    "id": "local.runbook",
+    "type": "runbook",
+    "title": "Local smoke test",
+    "status": "active",
+    "steps": [
+      "git pull in the project root",
+      "cd server",
+      "npm.cmd install",
+      "copy .env.example .env",
+      "fill TG_KEY and OWNER_ID in .env",
+      "npm.cmd run dev",
+      "open http://localhost:3000/health",
+      "in another terminal run python -m http.server 4173 --bind 127.0.0.1 from project root",
+      "open http://127.0.0.1:4173/",
+      "fill calculator and submit the lead form",
+      "verify that Telegram owner receives the lead with calculator data"
+    ]
+  },
+  {
+    "id": "known.gap.callback_buttons",
+    "type": "known_gap",
+    "title": "Callback buttons need Telegram update handling",
+    "status": "needs_followup",
+    "details": "The current server sends callback_data buttons, but it does not yet run Telegram polling or webhook handlers for callback_query. URL buttons such as WhatsApp, tel, and Mini App work without callback handling. Callback actions like take, transfer, stats, and main_menu require polling or webhook implementation."
+  },
+  {
+    "id": "validation.current",
+    "type": "validation_snapshot",
+    "title": "Current repository data check",
+    "status": "checked",
+    "checked_items": [
+      "Frontend lead form has a POST fetch to /api/leads",
+      "Frontend sends calculator payload with the form",
+      "Server has GET /health",
+      "Server has POST /api/leads",
+      "Server has CORS for local frontend origins",
+      "Server .env.example uses TG_KEY and OWNER_ID placeholders",
+      ".gitignore excludes node_modules and .env"
+    ],
+    "not_verified_runtime": [
+      "npm install",
+      "npm run dev",
+      "actual Telegram sendMessage delivery",
+      "browser CORS runtime check"
+    ],
+    "reason_not_verified_runtime": "GitHub connector can inspect and edit files but cannot run the local Windows project or use the user's .env secrets."
+  }
+]
