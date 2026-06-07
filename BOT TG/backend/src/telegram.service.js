@@ -1,22 +1,19 @@
 import { buildLeadMessage, leadActionKeyboard, persistentNavigationKeyboard } from './bot-ui.service.js';
+import { requireOwnerId, requireTelegramToken } from './config.js';
+
+const getTelegramToken = () => {
+  return requireTelegramToken();
+};
 
 const getConfig = () => {
-  const token = process.env.TG_KEY;
-  const ownerId = process.env.OWNER_ID;
-
-  if (!token) {
-    throw new Error('TG_KEY is not configured');
-  }
-
-  if (!ownerId) {
-    throw new Error('OWNER_ID is not configured');
-  }
+  const token = getTelegramToken();
+  const ownerId = requireOwnerId();
 
   return { token, ownerId };
 };
 
-export const telegramApi = async (method, payload) => {
-  const { token } = getConfig();
+export const telegramApi = async (method, payload = {}) => {
+  const token = getTelegramToken();
 
   const response = await fetch(`https://api.telegram.org/bot${token}/${method}`, {
     method: 'POST',
@@ -33,6 +30,40 @@ export const telegramApi = async (method, payload) => {
   }
 
   return data;
+};
+
+export const getBotInfo = async () => telegramApi('getMe');
+
+export const getWebhookInfo = async () => telegramApi('getWebhookInfo');
+
+export const getUpdates = async ({ offset, timeout = 25 } = {}) => {
+  const payload = {
+    timeout,
+    allowed_updates: ['message', 'callback_query'],
+  };
+
+  if (offset !== undefined && offset !== null) {
+    payload.offset = offset;
+  }
+
+  return telegramApi('getUpdates', payload);
+};
+
+export const setWebhook = async (url) => {
+  if (!url) {
+    throw new Error('Webhook URL is required');
+  }
+
+  return telegramApi('setWebhook', {
+    url,
+    allowed_updates: ['message', 'callback_query'],
+  });
+};
+
+export const deleteWebhook = async ({ dropPendingUpdates = false } = {}) => {
+  return telegramApi('deleteWebhook', {
+    drop_pending_updates: dropPendingUpdates,
+  });
 };
 
 export const sendMessage = async ({ chatId, text, replyMarkup }) => {

@@ -16,6 +16,14 @@ VoltEdge - статический лендинг для услуг электр�
 
 Проект не использует сборщик для лендинга. Страницу можно открыть напрямую или через локальный сервер. Telegram backend и Mini App запускаются отдельно.
 
+Текущая локальная рабочая папка:
+
+```text
+D:\DEV\Electro
+```
+
+Локально Telegram backend работает через `BOT_UPDATE_MODE=polling`, чтобы принимать команды и inline-кнопки через Telegram `getUpdates`. Для сервера используется `BOT_UPDATE_MODE=webhook` с публичным HTTPS URL.
+
 ## Основные блоки лендинга
 
 - Hero: оффер, CTA, телефон, trust-метрики и визуальный блок.
@@ -119,7 +127,7 @@ VoltEdge - статический лендинг для услуг электр�
 - `calculatedAt`
 - `leadSource`
 
-Отправка сейчас не уходит на backend или CRM. Форма готовит клиентский payload и сохраняет его в `window.lastLeadPayload` для проверки и дальнейшей интеграции.
+Форма отправляет payload в backend endpoint `http://localhost:3000/api/leads` или в endpoint, заданный через `data-leads-endpoint`, `window.VOLTEDGE_LEADS_ENDPOINT` или query-параметр `leadsEndpoint`. Для QA сохраняется `window.lastLeadPayload`.
 
 ## Telegram-модуль `BOT TG/`
 
@@ -143,15 +151,16 @@ BOT TG/
 - менять статус заявки;
 - переназначать заявку mock-сотруднику;
 - показывать базовую статистику;
-- обрабатывать Telegram callbacks через `POST /api/telegram/webhook`;
+- обрабатывать Telegram callbacks через общий `handleTelegramUpdate(update)` из polling или webhook;
+- запускать локальный polling через `BOT_UPDATE_MODE=polling`;
+- переключаться на серверный webhook через `BOT_UPDATE_MODE=webhook`;
 - поддерживать команду `/reload`, которая обновляет клавиатуру и возвращает пользователя в главное меню.
 
 Текущие ограничения:
 
 - заявки хранятся в памяти backend и очищаются после перезапуска;
-- webhook требует публичный backend URL;
+- webhook требует публичный backend URL, но локально используется polling;
 - роли через Telegram ID ещё не реализованы окончательно;
-- форма сайта ещё не подключена к `POST /api/leads` окончательно;
 - Mini App пока работает на mock-данных.
 
 Полный контекст Telegram-модуля смотри в `docs/telegram-bot-context.md`.

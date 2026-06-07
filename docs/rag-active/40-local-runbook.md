@@ -1,7 +1,7 @@
 # RAG Active 40 - Local Runbook
 
 Status: active operational runbook
-Updated: 2026-05-20
+Updated: 2026-06-07
 Scope: local commands, checks, backend testing
 
 ## Purpose
@@ -15,6 +15,19 @@ It should be indexed only when the task is about running, testing, deploying or 
 The website is static and can be opened directly or through a local HTTP server.
 
 Use an HTTP server when testing assets, forms and browser behavior.
+
+Windows command:
+
+```powershell
+cd D:\DEV\Electro
+python -m http.server 4174 --bind 127.0.0.1
+```
+
+Open:
+
+```text
+http://127.0.0.1:4174/
+```
 
 ## JavaScript syntax check
 
@@ -56,6 +69,8 @@ Create `.env` from `.env.example`:
 PORT=3000
 TG_KEY=your_bot_token
 OWNER_ID=your_telegram_chat_id
+BOT_UPDATE_MODE=polling
+DELETE_WEBHOOK_ON_POLLING=true
 ```
 
 Install:
@@ -71,6 +86,8 @@ Run:
 npm run dev
 ```
 
+For local development, `BOT_UPDATE_MODE=polling` lets the backend receive Telegram commands and inline button clicks without a public HTTPS webhook.
+
 Health check:
 
 ```text
@@ -83,9 +100,20 @@ Telegram smoke test:
 npm run test:telegram
 ```
 
+Owner-protected diagnostics:
+
+```powershell
+$ownerId = '<OWNER_ID>'
+Invoke-RestMethod "http://localhost:3000/api/telegram/get-me?telegramUserId=$ownerId"
+Invoke-RestMethod "http://localhost:3000/api/telegram/webhook-info?telegramUserId=$ownerId"
+Invoke-RestMethod -Method Post "http://localhost:3000/api/test-lead" `
+  -ContentType 'application/json' `
+  -Body (@{ telegramUserId = $ownerId } | ConvertTo-Json)
+```
+
 ## Local website to backend request
 
-Current missing bridge:
+Current bridge:
 
 ```js
 await fetch('http://localhost:3000/api/leads', {
@@ -96,6 +124,25 @@ await fetch('http://localhost:3000/api/leads', {
 ```
 
 For production use deployed backend URL instead of localhost.
+
+## Server webhook mode
+
+On a public HTTPS server:
+
+```env
+BOT_UPDATE_MODE=webhook
+PUBLIC_BASE_URL=https://api.yourdomain.com
+WEBHOOK_PATH=/api/telegram/webhook
+```
+
+Then run:
+
+```bash
+npm run telegram:set-webhook
+npm run telegram:webhook-info
+```
+
+For local tunnel tests, use the tunnel HTTPS URL as `PUBLIC_BASE_URL`.
 
 ## Git / QA checks
 

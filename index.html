@@ -635,7 +635,7 @@
           </div>
           <form class="lead-form reveal" data-lead-form data-animate="flip">
             <label>Имя<input name="name" type="text" placeholder="Как к вам обращаться" required /></label>
-            <label>Телефон<input name="phone" type="tel" placeholder="+7 700 000 00 00" required /></label>
+            <label>Телефон<input name="phone" type="tel" placeholder="+7XXXXXXXXXX" maxlength="12" pattern="\+7\d{10}" inputmode="tel" autocomplete="tel" required /></label>
             <label>Тип объекта
               <select name="object" required>
                 <option value="">Выберите</option>
@@ -994,6 +994,6 @@
     </footer>
 
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-    <script src="script.js?v=20260520-6"></script>
+    <script src="script.js?v=20260607-telegram-1"></script>
   </body>
 </html>

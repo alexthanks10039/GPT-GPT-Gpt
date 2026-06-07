@@ -2,6 +2,8 @@ import { Router } from 'express';
 import {
   answerCallbackQuery,
   editMessage,
+  getBotInfo,
+  getWebhookInfo,
   sendMessage,
 } from './telegram.service.js';
 import {
@@ -9,6 +11,8 @@ import {
   buildLeadsListMessage,
   buildMainMenuText,
   buildStatsMessage,
+  employeeDetailsKeyboard,
+  employeeDetailsMessage,
   employeesKeyboard,
   employeesListMessage,
   leadActionKeyboard,
@@ -26,8 +30,20 @@ import {
   updateLeadStatus,
 } from './leads.store.js';
 import { getEmployeeById } from './employees.store.js';
+import {
+  ACCESS_MODE,
+  isOwnerTelegramUser,
+  requireOwnerAccess,
+} from './owner-access.js';
 
 export const botRouter = Router();
+
+const ownerDeniedResponse = {
+  ok: false,
+  success: false,
+  accessMode: ACCESS_MODE,
+  message: 'Owner access required',
+};
 
 const sendMainMenu = async (chatId) => {
   await sendMessage({
@@ -207,6 +223,16 @@ const handleLeadCallback = async ({ data, chatId, messageId, username }) => {
     return;
   }
 
+  if (action === 'status_menu') {
+    await safeEditOrSend({
+      chatId,
+      messageId,
+      text: 'Выберите новый статус заявки:',
+      replyMarkup: statusMenuKeyboard(leadId),
+    });
+    return;
+  }
+
   if (action === 'status') {
     const updatedLead = updateLeadStatus({
       leadId,
@@ -230,6 +256,37 @@ const handleLeadCallback = async ({ data, chatId, messageId, username }) => {
       replyMarkup: mainMenuKeyboard(),
     });
   }
+};
+
+const handleEmployeeCallback = async ({ data, chatId, messageId }) => {
+  const [, action, employeeId] = data.split(':');
+
+  if (action !== 'open') {
+    await sendMessage({
+      chatId,
+      text: 'Действие сотрудника пока не реализовано.',
+      replyMarkup: mainMenuKeyboard(),
+    });
+    return;
+  }
+
+  const employee = getEmployeeById(employeeId);
+
+  if (!employee) {
+    await sendMessage({
+      chatId,
+      text: 'Сотрудник не найден.',
+      replyMarkup: mainMenuKeyboard(),
+    });
+    return;
+  }
+
+  await safeEditOrSend({
+    chatId,
+    messageId,
+    text: employeeDetailsMessage(employee),
+    replyMarkup: employeeDetailsKeyboard(),
+  });
 };
 
 const handleTextMessage = async ({ chatId, text }) => {
@@ -270,51 +327,100 @@ const handleTextMessage = async ({ chatId, text }) => {
   });
 };
 
-botRouter.post('/api/telegram/webhook', async (req, res) => {
-  const update = req.body || {};
+const answerDeniedCallback = async (callback) => {
+  if (!callback?.id) {
+    return;
+  }
 
   try {
-    if (update.callback_query) {
-      const callback = update.callback_query;
-      const data = callback.data || '';
-      const chatId = callback.message?.chat?.id;
-      const messageId = callback.message?.message_id;
-      const username = callback.from?.username || callback.from?.first_name;
+    await answerCallbackQuery({
+      callbackQueryId: callback.id,
+      text: 'Owner access required',
+    });
+  } catch (error) {
+    console.warn('[telegram.owner_denied_answer_failed]', error.message);
+  }
+};
 
-      await answerCallbackQuery({
-        callbackQueryId: callback.id,
-        text: 'Готово',
-      });
+botRouter.get('/api/telegram/get-me', requireOwnerAccess, async (req, res) => {
+  try {
+    const data = await getBotInfo();
+    return res.json({ ok: true, result: data.result });
+  } catch (error) {
+    console.error('[telegram.get_me_error]', error);
+    return res.status(500).json({ ok: false, message: error.message });
+  }
+});
 
-      if (data.startsWith('menu:')) {
-        await handleMenuCallback({ data, chatId, messageId });
-      } else if (data.startsWith('lead:')) {
-        await handleLeadCallback({ data, chatId, messageId, username });
-      } else {
-        await sendMessage({
-          chatId,
-          text: 'Действие пока не реализовано.',
-          replyMarkup: mainMenuKeyboard(),
-        });
-      }
+botRouter.get('/api/telegram/webhook-info', requireOwnerAccess, async (req, res) => {
+  try {
+    const data = await getWebhookInfo();
+    return res.json({ ok: true, result: data.result });
+  } catch (error) {
+    console.error('[telegram.webhook_info_error]', error);
+    return res.status(500).json({ ok: false, message: error.message });
+  }
+});
 
-      return res.json({ ok: true });
+export const handleTelegramUpdate = async (update = {}) => {
+  if (update.callback_query) {
+    const callback = update.callback_query;
+    const data = callback.data || '';
+    const chatId = callback.message?.chat?.id;
+    const messageId = callback.message?.message_id;
+    const username = callback.from?.username || callback.from?.first_name;
+
+    if (!isOwnerTelegramUser(callback.from?.id)) {
+      await answerDeniedCallback(callback);
+      return { status: 403, body: ownerDeniedResponse };
     }
 
-    if (update.message) {
-      const chatId = update.message.chat?.id;
-      const text = update.message.text || '';
+    await answerCallbackQuery({
+      callbackQueryId: callback.id,
+      text: 'Готово',
+    });
 
+    if (data.startsWith('menu:')) {
+      await handleMenuCallback({ data, chatId, messageId });
+    } else if (data.startsWith('lead:')) {
+      await handleLeadCallback({ data, chatId, messageId, username });
+    } else if (data.startsWith('employee:')) {
+      await handleEmployeeCallback({ data, chatId, messageId });
+    } else {
       await sendMessage({
         chatId,
-        text: 'Клавиатура включена.',
-        replyMarkup: persistentNavigationKeyboard(),
+        text: 'Действие пока не реализовано.',
+        replyMarkup: mainMenuKeyboard(),
       });
-      await handleTextMessage({ chatId, text });
-      return res.json({ ok: true });
     }
 
-    return res.json({ ok: true, skipped: true });
+    return { status: 200, body: { ok: true } };
+  }
+
+  if (update.message) {
+    const chatId = update.message.chat?.id;
+    const text = update.message.text || '';
+
+    if (!isOwnerTelegramUser(update.message.from?.id)) {
+      return { status: 403, body: ownerDeniedResponse };
+    }
+
+    await sendMessage({
+      chatId,
+      text: 'Клавиатура включена.',
+      replyMarkup: persistentNavigationKeyboard(),
+    });
+    await handleTextMessage({ chatId, text });
+    return { status: 200, body: { ok: true } };
+  }
+
+  return { status: 200, body: { ok: true, skipped: true } };
+};
+
+botRouter.post('/api/telegram/webhook', async (req, res) => {
+  try {
+    const result = await handleTelegramUpdate(req.body || {});
+    return res.status(result.status).json(result.body);
   } catch (error) {
     console.error('[telegram.webhook_error]', error);
     return res.status(500).json({ ok: false, message: error.message });
