@@ -111,7 +111,7 @@ if [ ! -f ".env" ]; then
   echo "Create it with:"
   echo "PORT=$BACKEND_PORT"
   echo "TG_KEY=your_bot_token"
-  echo "OWNER_ID=477062399"
+  echo "OWNER_ID=your_telegram_chat_id"
   echo ""
 fi
 

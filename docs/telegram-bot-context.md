@@ -110,7 +110,7 @@ GET http://localhost:3000/health
 ```text
 PORT=3000
 TG_KEY=telegram_bot_token
-OWNER_ID=477062399
+OWNER_ID=put_your_telegram_chat_id_here
 MINI_APP_URL=
 ```
 
@@ -353,7 +353,7 @@ MVP-подход: проверять роль по Telegram ID.
 Переменные окружения будущей реализации:
 
 ```text
-OWNER_IDS=477062399
+OWNER_IDS=put_owner_telegram_chat_id_here
 MANAGER_IDS=
 EMPLOYEE_IDS=
 ```

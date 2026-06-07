@@ -60,8 +60,9 @@
 - При submit формы в payload попадает расчет из калькулятора.
 - Hidden-поля формы: `calculatorPayload`, `estimatedPrice`, `calculatorArea`, `calculatorOptions`, `calculatorBreakdown`, `calculatedAt`, `leadSource`.
 - `window.lastLeadPayload` содержит данные формы, расчет, breakdown, дату расчета и источник.
-- Отправка формы пока клиентская: backend/CRM не подключены.
-- Следующий шаг интеграции: отправлять `leadPayload` на `POST /api/leads` в `BOT TG/backend`.
+- Форма отправляет `leadPayload` на `POST /api/leads` в `BOT TG/backend`.
+- Локальный endpoint по умолчанию: `http://localhost:3000/api/leads`.
+- Endpoint можно переопределить через `data-leads-endpoint`, `window.VOLTEDGE_LEADS_ENDPOINT` или query-параметр `leadsEndpoint`.
 
 ## Форма заявки
 
@@ -93,7 +94,7 @@
 - Backend использует Node.js/Express и переменные окружения `TG_KEY`, `OWNER_ID`, `MINI_APP_URL`.
 - Добавлен `POST /api/leads`: принимает заявку, валидирует `name` и `phone`, нормализует данные и отправляет уведомление владельцу через Telegram Bot API.
 - Добавлен smoke test `npm run test:telegram` через `src/test-send.js`.
-- Текущий `OWNER_ID`: `477062399`.
+- Реальный `OWNER_ID` хранится только в локальном `.env` и не коммитится.
 
 ## Telegram bot navigation and lead workflow 2026-05-20
 
@@ -196,3 +197,20 @@ python ingest.py
 - Проверено: baseline `baselines/figma-room-animation-test/` загружается, 18 изображений без broken assets.
 - RAG обновлен новым документом `docs/project-audit-2026-05-20.md`; локальный индекс ChromaDB пересобирается через `rag/ingest.py`.
 - RAG-скрипты переведены с deprecated imports на `langchain-chroma` и `langchain-huggingface`; `requirements.txt` обновлен.
+
+## Telegram local interface stabilization 2026-06-07
+
+- Проект синхронизирован с актуальным GitHub `origin/main` перед коммитом.
+- Backend получил режимы получения Telegram updates:
+  - `BOT_UPDATE_MODE=polling` для локальной разработки;
+  - `BOT_UPDATE_MODE=webhook` для публичного HTTPS-сервера.
+- Добавлен общий обработчик `handleTelegramUpdate(update)`, который используется и polling loop, и webhook route.
+- Добавлены CLI-команды backend:
+  - `npm run telegram:set-webhook`;
+  - `npm run telegram:delete-webhook`;
+  - `npm run telegram:webhook-info`.
+- Исправлена кнопка `Позвонить`: вместо Telegram-несовместимого `tel:` URL используется callback, который отправляет номер отдельным сообщением.
+- Добавлена кнопка `Изменить статус` в карточке заявки.
+- Добавлена обработка `employee:open:*`, чтобы кнопки сотрудников не попадали в не реализованное действие.
+- Телефон в форме ограничен форматом `+7XXXXXXXXXX`.
+- Проверено: backend health OK, Telegram `getMe` OK, webhook выключен для локального polling, тестовый lead возвращает `telegram: sent`.

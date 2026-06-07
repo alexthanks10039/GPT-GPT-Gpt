@@ -1692,21 +1692,62 @@ function setLeadSubmitState(isSubmitting) {
   submitButton.textContent = isSubmitting ? "Отправляем..." : submitButton.dataset.originalText;
 }
 
+function formatKazakhstanPhone(value) {
+  const digits = String(value || "").replace(/\D/g, "");
+  if (!digits) return "";
+
+  let normalized = digits;
+  if (normalized.startsWith("8")) normalized = `7${normalized.slice(1)}`;
+  if (!normalized.startsWith("7")) normalized = `7${normalized}`;
+
+  return `+${normalized.slice(0, 11)}`;
+}
+
+function isCompleteKazakhstanPhone(value) {
+  return /^\+7\d{10}$/.test(String(value || "").trim());
+}
+
+const phoneInput = leadForm?.querySelector("input[name='phone']");
+
+phoneInput?.addEventListener("focus", () => {
+  if (!phoneInput.value) phoneInput.value = "+7";
+});
+
+phoneInput?.addEventListener("input", () => {
+  phoneInput.value = formatKazakhstanPhone(phoneInput.value);
+});
+
+phoneInput?.addEventListener("blur", () => {
+  if (phoneInput.value === "+7") phoneInput.value = "";
+});
+
 leadForm?.addEventListener("submit", async (event) => {
   event.preventDefault();
   leadForm.dataset.submitted = "true";
   renderCalculator();
 
   const formData = new FormData(leadForm);
+  const formattedPhone = formatKazakhstanPhone(formData.get("phone"));
+
+  if (!isCompleteKazakhstanPhone(formattedPhone)) {
+    if (formNote) formNote.textContent = "Введите телефон в формате +7XXXXXXXXXX.";
+    phoneInput?.focus();
+    return;
+  }
+
   const calculator = latestCalculatorPayload || getCalculatorPayload();
   const leadPayload = {
     name: formData.get("name") || "Без имени",
-    phone: formData.get("phone"),
+    phone: formattedPhone,
     service: formData.get("object") || calculator.propertyType || "Не указано",
     message: `Тип объекта: ${formData.get("object") || "Не указано"}. Площадь из формы: ${formData.get("area") || "Не указана"}. Предварительная смета: ${calculator.estimatedPriceFormatted}.`,
+    objectType: formData.get("object"),
     contactObjectType: formData.get("object"),
     contactArea: formData.get("area"),
+    address: formData.get("area"),
     area: formData.get("area") || calculator.area,
+    calculatorData: calculator,
+    calculatedPrice: calculator.estimatedPrice,
     calculator,
     calculatorArea: calculator.area,
     calculatorOptions: calculator.services,
@@ -1716,6 +1757,7 @@ leadForm?.addEventListener("submit", async (event) => {
     calculatedAt: calculator.calculatedAt,
     timestamp: new Date().toISOString(),
     source: formData.get("leadSource") || "landing_calculator",
+    sourcePage: window.location.href,
   };
 
   formData.set("calculatorPayload", JSON.stringify(calculator));
@@ -1725,11 +1767,6 @@ leadForm?.addEventListener("submit", async (event) => {
   formData.set("calculatorBreakdown", JSON.stringify(calculator.breakdown));
   formData.set("calculatedAt", calculator.calculatedAt);
   window.lastLeadPayload = leadPayload;
-
-  if (!leadPayload.phone) {
-    if (formNote) formNote.textContent = "Укажите телефон, чтобы отправить заявку.";
-    return;
-  }
 
   const endpoint = getLeadEndpoint();
 

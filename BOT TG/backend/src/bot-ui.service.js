@@ -51,7 +51,10 @@ export const leadActionKeyboard = (lead) => {
       ],
       [
         { text: '💬 WhatsApp', url: `https://wa.me/${whatsappPhone}` },
-        { text: '📞 Позвонить', url: `tel:${phone}` },
+        { text: '📞 Позвонить', callback_data: `lead:call:${lead.id}` },
+      ],
+      [
+        { text: '📌 Изменить статус', callback_data: `lead:status_menu:${lead.id}` },
       ],
       [
         { text: '📊 Статистика', callback_data: 'menu:stats' },
@@ -147,6 +150,21 @@ export const employeesListMessage = () => [
   '',
   ...employees.map((employee, index) => `${index + 1}. ${employee.name} - ${employee.role} · ${employee.status}`),
 ].join('\n');
+
+export const employeeDetailsMessage = (employee) => [
+  `👷 ${employee.name}`,
+  '',
+  `Роль: ${employee.role}`,
+  `Статус: ${employee.status}`,
+  `Телефон: ${employee.phone}`,
+].join('\n');
+
+export const employeeDetailsKeyboard = () => ({
+  inline_keyboard: [
+    [{ text: '👷 Все сотрудники', callback_data: 'menu:employees' }],
+    [{ text: '🏠 Главное меню', callback_data: 'menu:main' }],
+  ],
+});
 
 export const employeesKeyboard = (leadId = null) => ({
   inline_keyboard: [

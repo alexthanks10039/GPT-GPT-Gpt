@@ -7,7 +7,10 @@
   "scripts": {
     "dev": "node --watch src/index.js",
     "start": "node src/index.js",
-    "test:telegram": "node src/test-send.js"
+    "test:telegram": "node src/test-send.js",
+    "telegram:set-webhook": "node src/telegram-webhook-cli.js set",
+    "telegram:delete-webhook": "node src/telegram-webhook-cli.js delete",
+    "telegram:webhook-info": "node src/telegram-webhook-cli.js info"
   },
   "dependencies": {
     "cors": "^2.8.5",
