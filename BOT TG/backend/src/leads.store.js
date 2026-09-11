@@ -1,4 +1,47 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const dataDir = path.resolve(__dirname, '../data');
+const dataFile = path.join(dataDir, 'leads.json');
+
 const leads = new Map();
+
+const ensureDataFile = () => {
+  fs.mkdirSync(dataDir, { recursive: true });
+
+  if (!fs.existsSync(dataFile)) {
+    fs.writeFileSync(dataFile, '[]\n', 'utf8');
+  }
+};
+
+const persist = () => {
+  ensureDataFile();
+  const snapshot = [...leads.values()];
+  const tempFile = `${dataFile}.tmp`;
+  fs.writeFileSync(tempFile, `${JSON.stringify(snapshot, null, 2)}\n`, 'utf8');
+  fs.renameSync(tempFile, dataFile);
+};
+
+const load = () => {
+  try {
+    ensureDataFile();
+    const raw = fs.readFileSync(dataFile, 'utf8');
+    const records = JSON.parse(raw);
+
+    if (!Array.isArray(records)) {
+      throw new Error('leads.json must contain an array');
+    }
+
+    for (const record of records) {
+      if (record && record.id) leads.set(record.id, record);
+    }
+  } catch (error) {
+    console.error('[leads.store] failed to load persisted leads:', error);
+  }
+};
 
 export const LEAD_STATUSES = {
   NEW: 'new',
@@ -31,6 +74,7 @@ export const createLeadRecord = (lead) => {
   };
 
   leads.set(record.id, record);
+  persist();
   return record;
 };
 
@@ -55,6 +99,7 @@ export const updateLeadStatus = ({ leadId, status, by = 'bot' }) => {
   });
 
   leads.set(lead.id, lead);
+  persist();
   return lead;
 };
 
@@ -75,6 +120,7 @@ export const reassignLead = ({ leadId, employeeId, employeeName, by = 'bot' }) =
   });
 
   leads.set(lead.id, lead);
+  persist();
   return lead;
 };
 
@@ -90,3 +136,5 @@ export const getLeadStats = () => {
     cancelled: all.filter((lead) => lead.status === LEAD_STATUSES.CANCELLED).length,
   };
 };
+
+load();
